@@ -1,13 +1,21 @@
-import { DB } from "../db";
-import { type JsonRpcBlock } from "@ckb-ccc/core/advancedBarrel";
+import {
+    type JsonRpcBlock,
+    type JsonRpcTransaction,
+    JsonRpcTransformers,
+} from "@ckb-ccc/core/advancedBarrel";
 import { WebSocket } from "ws";
-import type { JsonRpcPoolTransactionEntry } from "./type";
+import type { DB } from "../db";
 import { logger } from "../util/logger";
+import type {
+    JsonRpcPoolTransactionEntry,
+    JsonRpcTransactionView,
+} from "./type";
 
 export interface WebsocketTopicSubscriber {
     id: string;
     topic: string;
     sub_id: string | undefined;
+    // biome-ignore lint: handler will be multiple types
     handler: (data: any) => void;
 }
 
@@ -30,22 +38,24 @@ export class Subscriber {
                 sub_id: undefined,
                 handler: (block: JsonRpcBlock) => {
                     this.db.saveBlockHeader(block.header);
-                    block.proposals.forEach((txPid) => {
+                    // handle proposals transactions
+                    for (const txPid of block.proposals) {
                         this.db.updateBlockProposedTransaction(
                             txPid,
                             block.header.number,
                             block.header.hash,
                             +block.header.timestamp,
                         );
-                    });
-                    block.transactions.forEach((tx) => {
+                    }
+                    // handle committed transactions
+                    for (const tx of block.transactions) {
                         this.db.updateCommittedTransaction(
                             tx,
                             block.header.number,
                             block.header.hash,
                             +block.header.timestamp,
                         );
-                    });
+                    }
 
                     logger.debug(`New block: ${+block.header.number}`);
                     logger.debug(
@@ -53,8 +63,10 @@ export class Subscriber {
                     );
                     logger.debug(
                         `committed txs: ${JSON.stringify(
-                            block.transactions.map((tx: any) =>
-                                tx.hash.slice(0, 22),
+                            block.transactions.map((tx) =>
+                                JsonRpcTransformers.transactionTo(tx)
+                                    .hash()
+                                    .slice(0, 22),
                             ),
                         )}`,
                     );
