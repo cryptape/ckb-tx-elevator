@@ -1,6 +1,7 @@
 import fetch from "cross-fetch";
+import { Config } from "./config";
 
-const API_BASE_URL = "http://localhost:3000"; // adjust this to your server URL
+const API_BASE_URL = Config.apiHttpUrl; // adjust this to your server URL
 
 interface ApiResponse<T> {
     data?: T;
