@@ -114,7 +114,7 @@ export class Subscriber {
     run() {
         const topics = this.createTopicSubscriber();
         this.ws.on("open", () => {
-            logger.info("Connected to CKB node ", this.ckbRpcUrl);
+            logger.info(`Connected to CKB node ${this.ckbRpcUrl}`);
             for (const topic of topics) {
                 this.ws.send(
                     JSON.stringify({
@@ -158,7 +158,7 @@ export class Subscriber {
         });
 
         this.ws.on("close", () => {
-            logger.info("Disconnected from CKB node");
+            logger.info(`Disconnected from CKB node ${this.ckbRpcUrl}`);
         });
     }
 }
