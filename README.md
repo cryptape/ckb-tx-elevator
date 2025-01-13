@@ -42,6 +42,8 @@ Configure environment variables:
 cp .env.example .env
 ```
 
+update `frontend/vite.config.ts`'s `define` env var as well.
+
 Start the development servers:
 
 ```bash
