@@ -5,6 +5,8 @@ import { testnetSubscriber } from "./core/sub";
 import { logger } from "./util/logger";
 
 async function main() {
+    logger.info(`Config: ${JSON.stringify(Config, null, 2)}`);
+
     testnetSubscriber.run();
 
     const testnetSever = createServer(testnetDB);

@@ -1,5 +1,6 @@
 import type { Hex } from "@ckb-ccc/core";
 import express, { type Request, type Response } from "express";
+import { Config } from "../core/config";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
 
@@ -7,9 +8,17 @@ export function createServer(db: DB) {
     const app = express();
 
     app.use((_req, res, next) => {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Methods", "GET");
-        res.header("Access-Control-Allow-Headers", "Content-Type");
+        for (const origin of Config.allowOrigin) {
+            res.header("Access-Control-Allow-Origin", origin);
+        }
+        if (Config.allowOrigin.length > 0) {
+            res.header(
+                "Access-Control-Allow-Methods",
+                "GET, POST, PUT, DELETE",
+            );
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+        }
+
         next();
     });
 

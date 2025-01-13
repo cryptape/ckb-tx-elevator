@@ -12,6 +12,7 @@ import type {
     DBBlockHeader,
     JsonRpcPoolTransactionEntry,
     JsonRpcTransactionView,
+    PoolTransactionReject,
 } from "../core/type";
 import { getNowTimestamp } from "../util/time";
 import { DepType, HashType, TransactionStatus } from "./type";
@@ -371,8 +372,9 @@ export class DB {
 
     updateMempoolRejectedTransaction(
         tx: JsonRpcPoolTransactionEntry,
-        reason: string,
+        txReject: PoolTransactionReject,
     ) {
+        const reason = `${txReject.type}: ${txReject.description}`;
         const getStmt = this.db.prepare<[Hex], { id: DBId }>(
             "SELECT id From transactions WHERE tx_hash = ?",
         );

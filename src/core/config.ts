@@ -1,5 +1,6 @@
 import "dotenv/config";
 import process from "node:process";
+import { URL } from "node:url";
 
 export const Config = {
     mainnetDatabaseFile:
@@ -19,4 +20,24 @@ export const Config = {
 
     apiHttpPort: Number(process.env.API_HTTP_PORT ?? 3000),
     apiWsPort: Number(process.env.API_WS_PORT ?? 3001),
+    allowOrigin: extractAllowOriginList(process.env.ALLOW_ORIGIN ?? "*"),
 };
+
+export function extractAllowOriginList(value: string) {
+    const list = value
+        .split(",")
+        // test valid url
+        .filter((v) => {
+            if (v === "*") {
+                return true;
+            }
+
+            try {
+                new URL(v.trim());
+                return true;
+            } catch {
+                return false;
+            }
+        });
+    return list;
+}

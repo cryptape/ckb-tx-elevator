@@ -1,6 +1,5 @@
 import {
     type JsonRpcBlock,
-    type JsonRpcTransaction,
     JsonRpcTransformers,
 } from "@ckb-ccc/core/advancedBarrel";
 import { WebSocket } from "ws";
@@ -8,7 +7,7 @@ import type { DB } from "../db";
 import { logger } from "../util/logger";
 import type {
     JsonRpcPoolTransactionEntry,
-    JsonRpcTransactionView,
+    PoolTransactionReject,
 } from "./type";
 
 export interface WebsocketTopicSubscriber {
@@ -100,10 +99,10 @@ export class Subscriber {
                 sub_id: undefined,
                 handler: ([tx, reason]: [
                     JsonRpcPoolTransactionEntry,
-                    string,
+                    PoolTransactionReject,
                 ]) => {
                     logger.debug(
-                        `new rejected tx: ${tx.transaction.hash.slice(0, 22)}, reason: ${reason}`,
+                        `new rejected tx: ${tx.transaction.hash.slice(0, 22)}, reason: ${JSON.stringify(reason)}`,
                     );
                     this.db.updateMempoolRejectedTransaction(tx, reason);
                 },
