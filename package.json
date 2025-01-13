@@ -1,6 +1,6 @@
 {
     "name": "ckb-elevator-backend",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "",
     "main": "index.js",
     "tsup": {
@@ -12,7 +12,7 @@
     },
     "scripts": {
         "dev": "tsx watch src/index.ts",
-        "build": "tsup",
+        "build": "tsup && cp src/db/table.sql dist/table.sql",
         "start": "node dist/index.cjs",
         "lint": "biome check src --write",
         "fmt": "biome format . --write"
