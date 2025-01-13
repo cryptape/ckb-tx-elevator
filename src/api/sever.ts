@@ -1,6 +1,6 @@
-import express, { Request, Response } from "express";
-import { DB } from "../db";
-import { Hex } from "@ckb-ccc/core";
+import type { Hex } from "@ckb-ccc/core";
+import express, { type Request, type Response } from "express";
+import type { DB } from "../db";
 import { logger } from "../util/logger";
 
 export function createServer(db: DB) {
@@ -52,7 +52,7 @@ export function createServer(db: DB) {
     });
 
     app.get("/tip-block-txs", async (_req: Request, res: Response) => {
-        const blockHeader: any = db.getTipBlockHeader();
+        const blockHeader = db.getTipBlockHeader();
         if (!blockHeader) {
             res.json({
                 error: "No tip block found",

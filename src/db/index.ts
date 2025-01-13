@@ -1,19 +1,20 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { type Hex } from "@ckb-ccc/core";
+import type { Hex } from "@ckb-ccc/core";
+import {
+    type JsonRpcBlockHeader,
+    type JsonRpcTransaction,
+    JsonRpcTransformers,
+} from "@ckb-ccc/core/advancedBarrel";
 import sqlite3 from "better-sqlite3";
 import type { Database } from "better-sqlite3";
 import type {
+    DBBlockHeader,
     JsonRpcPoolTransactionEntry,
     JsonRpcTransactionView,
 } from "../core/type";
-import { DepType, HashType, TransactionStatus } from "./type";
-import {
-    JsonRpcBlockHeader,
-    JsonRpcTransaction,
-    JsonRpcTransformers,
-} from "@ckb-ccc/core/advancedBarrel";
 import { getNowTimestamp } from "../util/time";
+import { DepType, HashType, TransactionStatus } from "./type";
 
 export class DB {
     private db: Database;
@@ -41,23 +42,23 @@ export class DB {
 		INSERT INTO cell_dep (transaction_id, o_tx_hash, o_index, dep_type)
 		VALUES (?, ?, ?, ?)
 	    `);
-        transaction.cell_deps.forEach((dep) => {
+        for (const dep of transaction.cell_deps) {
             cellDepStmt.run(
                 txId,
                 dep.out_point.tx_hash,
                 +dep.out_point.index,
                 DepType.fromString(dep.dep_type),
             );
-        });
+        }
 
         // Insert header deps
         const headerDepStmt = this.db.prepare<[DBId, Hex]>(`
 		INSERT INTO header_dep (transaction_id, header_hash)
 		VALUES (?, ?)
 	    `);
-        transaction.header_deps.forEach((hash) => {
+        for (const hash of transaction.header_deps) {
             headerDepStmt.run(txId, hash);
-        });
+        }
 
         // Helper function to insert script and return its ID
         const insertScript = this.db.prepare<
@@ -74,14 +75,14 @@ export class DB {
 		INSERT INTO input (transaction_id, previous_output_tx_hash, previous_output_index, since)
 		VALUES (?, ?, ?, ?)
 	    `);
-        transaction.inputs.forEach((input) => {
+        for (const input of transaction.inputs) {
             inputStmt.run(
                 txId,
                 input.previous_output.tx_hash,
                 +input.previous_output.index,
                 input.since,
             );
-        });
+        }
 
         // Insert outputs
         const outputStmt = this.db.prepare<
@@ -349,7 +350,7 @@ export class DB {
 
     updateMempoolProposingTransaction(tx: JsonRpcPoolTransactionEntry) {
         const getStmt = this.db.prepare<[Hex], { id: DBId }>(
-            `SELECT id From transactions WHERE tx_hash = ?`,
+            "SELECT id From transactions WHERE tx_hash = ?",
         );
         const txId = getStmt.get(tx.transaction.hash)?.id;
         if (txId) {
@@ -373,7 +374,7 @@ export class DB {
         reason: string,
     ) {
         const getStmt = this.db.prepare<[Hex], { id: DBId }>(
-            `SELECT id From transactions WHERE tx_hash = ?`,
+            "SELECT id From transactions WHERE tx_hash = ?",
         );
         const txId = getStmt.get(tx.transaction.hash)?.id;
         if (txId) {
@@ -404,7 +405,7 @@ export class DB {
         const txHash = JsonRpcTransformers.transactionTo(tx).hash();
 
         const getStmt = this.db.prepare<[Hex], { id: DBId }>(
-            `SELECT id From transactions WHERE tx_hash = ?`,
+            "SELECT id From transactions WHERE tx_hash = ?",
         );
         const txId = getStmt.get(txHash)?.id;
         if (txId) {
@@ -492,7 +493,7 @@ export class DB {
     }
 
     getTipBlockHeader() {
-        const stmt = this.db.prepare(`
+        const stmt = this.db.prepare<[], DBBlockHeader>(`
 	    SELECT * FROM block_header ORDER BY block_number DESC LIMIT 1	
 	`);
         return stmt.get();
