@@ -1,0 +1,53 @@
+@import "styles/animate.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: "Open Runde";
+    src: url("./src/assets/fonts/OpenRunde-Medium.woff2") format("woff2"),
+        url("./src/assets/fonts/OpenRunde-Medium.woff") format("woff"),
+        url("./src/assets/fonts/OpenRunde-Semibold.woff2") format("woff2"),
+        url("./src/assets/fonts/OpenRunde-Semibold.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Base Styles */
+@layer base {
+    body {
+        @apply font-body text-body1; /* Use body font */
+        color: theme(
+          "colors.text.primary",
+        ); /* Set text color to default text color */
+    }
+
+    h1 {
+        @apply font-heading text-h1; /* Apply heading font and size */
+    }
+
+    h2 {
+        @apply font-heading text-h2; /* Apply heading font and size */
+    }
+
+    h3 {
+        @apply font-heading text-h3; /* Apply heading font and size */
+    }
+
+    h4 {
+        @apply font-heading text-h4; /* Apply heading font and size */
+    }
+
+    p {
+        @apply text-body1; /* Apply body text style */
+    }
+}
+
+/* Component Styles */
+@layer components {
+    .btn {
+        @apply px-4 py-2 bg-primary text-button1 rounded; /* Define button styles */
+        @apply hover:bg-hover; /* Use the hover color defined in the config */
+    }
+}

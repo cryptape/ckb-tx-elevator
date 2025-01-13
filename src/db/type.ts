@@ -1,8 +1,9 @@
 export enum TransactionStatus {
     Pending = 0,
-    Proposed = 1,
-    Committed = 2,
-    Rejected = 3,
+    Proposing = 1,
+    Proposed = 2,
+    Committed = 3,
+    Rejected = 4,
 }
 
 // Add this namespace with the same name as the enum
@@ -11,6 +12,9 @@ export namespace TransactionStatus {
         switch (status) {
             case TransactionStatus.Pending:
                 return "Pending";
+
+            case TransactionStatus.Proposing:
+                return "Proposing";
 
             case TransactionStatus.Proposed:
                 return "Proposed";
@@ -30,6 +34,9 @@ export namespace TransactionStatus {
         switch (status) {
             case "Pending":
                 return TransactionStatus.Pending;
+
+            case "Proposing":
+                return TransactionStatus.Proposing;
 
             case "Proposed":
                 return TransactionStatus.Proposed;

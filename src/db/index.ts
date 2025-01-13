@@ -1,11 +1,18 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Hex } from "@ckb-ccc/core";
+import { type Hex } from "@ckb-ccc/core";
 import sqlite3 from "better-sqlite3";
 import type { Database } from "better-sqlite3";
-import type { JsonRpcPoolTransactionEntry } from "../type";
+import type {
+    JsonRpcPoolTransactionEntry,
+    JsonRpcTransactionView,
+} from "../core/type";
 import { DepType, HashType, TransactionStatus } from "./type";
-import { JsonRpcBlockHeader } from "@ckb-ccc/core/dist.commonjs/advancedBarrel";
+import {
+    JsonRpcBlockHeader,
+    JsonRpcTransaction,
+    JsonRpcTransformers,
+} from "@ckb-ccc/core/advancedBarrel";
 import { getNowTimestamp } from "../util/time";
 
 export class DB {
@@ -26,7 +33,7 @@ export class DB {
     }
 
     private saveTransactionRelatedData(
-        tx: JsonRpcPoolTransactionEntry,
+        transaction: JsonRpcTransactionView,
         txId: DBId,
     ) {
         // Insert cell deps
@@ -34,7 +41,7 @@ export class DB {
 		INSERT INTO cell_dep (transaction_id, o_tx_hash, o_index, dep_type)
 		VALUES (?, ?, ?, ?)
 	    `);
-        tx.transaction.cell_deps.forEach((dep) => {
+        transaction.cell_deps.forEach((dep) => {
             cellDepStmt.run(
                 txId,
                 dep.out_point.tx_hash,
@@ -48,7 +55,7 @@ export class DB {
 		INSERT INTO header_dep (transaction_id, header_hash)
 		VALUES (?, ?)
 	    `);
-        tx.transaction.header_deps.forEach((hash) => {
+        transaction.header_deps.forEach((hash) => {
             headerDepStmt.run(txId, hash);
         });
 
@@ -67,7 +74,7 @@ export class DB {
 		INSERT INTO input (transaction_id, previous_output_tx_hash, previous_output_index, since)
 		VALUES (?, ?, ?, ?)
 	    `);
-        tx.transaction.inputs.forEach((input) => {
+        transaction.inputs.forEach((input) => {
             inputStmt.run(
                 txId,
                 input.previous_output.tx_hash,
@@ -83,7 +90,7 @@ export class DB {
 		INSERT INTO output (transaction_id, capacity, lock_script_id, type_script_id, o_data)
 		VALUES (?, ?, ?, ?, ?)
 	    `);
-        tx.transaction.outputs.forEach((output, index) => {
+        transaction.outputs.forEach((output, index) => {
             // Insert lock script
             const runResult = insertScript.run(
                 output.lock.code_hash,
@@ -103,7 +110,7 @@ export class DB {
                 typeScriptId = runResult.lastInsertRowid;
             }
 
-            const data = tx.transaction.outputs_data[index];
+            const data = transaction.outputs_data[index];
 
             outputStmt.run(
                 txId,
@@ -140,11 +147,11 @@ export class DB {
             const txId = result.lastInsertRowid;
 
             // insert into other tables, eg: cell_dep, header_dep, input, output
-            this.saveTransactionRelatedData(tx, txId);
+            this.saveTransactionRelatedData(tx.transaction, txId);
         })();
     }
 
-    saveProposedPoolTransaction(tx: JsonRpcPoolTransactionEntry) {
+    saveProposingPoolTransaction(tx: JsonRpcPoolTransactionEntry) {
         const txStmt = this.db.prepare<
             [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number]
         >(`
@@ -163,14 +170,121 @@ export class DB {
                 tx.fee,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
-                TransactionStatus.Proposed,
+                TransactionStatus.Proposing,
                 getNowTimestamp(),
             );
             const txId = result.lastInsertRowid;
 
             // insert into other tables, eg: cell_dep, header_dep, input, output
-            this.saveTransactionRelatedData(tx, txId);
+            this.saveTransactionRelatedData(tx.transaction, txId);
         })();
+    }
+
+    saveRejectedPoolTransaction(
+        tx: JsonRpcPoolTransactionEntry,
+        reason: string,
+    ) {
+        const txStmt = this.db.prepare<
+            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number, string]
+        >(`
+	INSERT INTO transactions (
+	    tx_hash, cycles, size, fee, version, witnesses, status, rejected_at, reject_reason
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`);
+
+        // Start a transaction for atomic operations
+        this.db.transaction(() => {
+            // Insert main transaction
+            const result = txStmt.run(
+                tx.transaction.hash,
+                tx.cycles,
+                tx.size,
+                tx.fee,
+                tx.transaction.version,
+                JSON.stringify(tx.transaction.witnesses),
+                TransactionStatus.Rejected,
+                getNowTimestamp(),
+                reason,
+            );
+            const txId = result.lastInsertRowid;
+
+            // insert into other tables, eg: cell_dep, header_dep, input, output
+            this.saveTransactionRelatedData(tx.transaction, txId);
+        })();
+    }
+
+    saveProposedBlockTransaction(
+        tx: JsonRpcTransaction,
+        blockNumber: Hex,
+        blockHash: Hex,
+    ) {
+        const txStmt = this.db.prepare<
+            [Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+        >(`	
+	INSERT INTO transactions (
+	    tx_hash, version, witnesses, status, proposed_at, proposed_at_block_number, proposed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?)
+	     `);
+
+        const txView: JsonRpcTransactionView = {
+            hash: JsonRpcTransformers.transactionTo(tx).hash(),
+            ...tx,
+        };
+
+        // Start a transaction for atomic operations
+        this.db.transaction(() => {
+            // Insert main transaction
+            const result = txStmt.run(
+                txView.hash,
+                txView.version,
+                JSON.stringify(txView.witnesses),
+                TransactionStatus.Proposed,
+                getNowTimestamp(),
+                blockNumber,
+                blockHash,
+            );
+            const txId = result.lastInsertRowid;
+
+            // insert into other tables, eg: cell_dep, header_dep, input, output
+            this.saveTransactionRelatedData(txView, txId);
+        });
+    }
+
+    saveCommittedBlockTransaction(
+        tx: JsonRpcTransaction,
+        blockNumber: Hex,
+        blockHash: Hex,
+    ) {
+        const txStmt = this.db.prepare<
+            [Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+        >(`
+	INSERT INTO transactions (
+	    tx_hash, version, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?)
+	     `);
+
+        const txView: JsonRpcTransactionView = {
+            hash: JsonRpcTransformers.transactionTo(tx).hash(),
+            ...tx,
+        };
+
+        // Start a transaction for atomic operations
+        this.db.transaction(() => {
+            // Insert main transaction
+            const result = txStmt.run(
+                txView.hash,
+                txView.version,
+                JSON.stringify(txView.witnesses),
+                TransactionStatus.Committed,
+                getNowTimestamp(),
+                blockNumber,
+                blockHash,
+            );
+            const txId = result.lastInsertRowid;
+
+            // insert into other tables, eg: cell_dep, header_dep, input, output
+            this.saveTransactionRelatedData(txView, txId);
+        });
     }
 
     saveBlockHeader(header: JsonRpcBlockHeader) {
@@ -200,18 +314,40 @@ export class DB {
 
     updateBlockProposedTransaction(
         txPid: Hex,
+        blockNumber: Hex,
         blockHash: Hex,
         blockTimestamp: number,
     ) {
-        const stmt = this.db.prepare<[TransactionStatus, Hex, number, Hex]>(`
+        const getStmt = this.db.prepare<[Hex], { id: DBId }>(
+            `SELECT id From transactions WHERE tx_hash LIKE ? || '%'`,
+        );
+        const txId = getStmt.get(txPid)?.id;
+
+        if (txId) {
+            const stmt = this.db.prepare<
+                [TransactionStatus, Hex, Hex, number, Hex]
+            >(`
 	    UPDATE transactions
-	    SET status = ?, proposed_at_block_hash = ?, proposed_at = ?
+	    SET status = ?, proposed_at_block_number = ?, proposed_at_block_hash = ?, proposed_at = ?
 	    WHERE tx_hash LIKE ? || '%'
 	`);
-        stmt.run(TransactionStatus.Proposed, blockHash, blockTimestamp, txPid);
+            return stmt.run(
+                TransactionStatus.Proposed,
+                blockNumber,
+                blockHash,
+                blockTimestamp,
+                txPid,
+            );
+        }
+
+        //todo: get transaction from txPid
+        console.debug(
+            `Transaction query not impl for txPid: ${txPid}, ignored.`,
+        );
+        //return this.saveProposedBlockTransaction(txPid, blockNumber, blockHash);
     }
 
-    updateMempoolProposedTransaction(tx: JsonRpcPoolTransactionEntry) {
+    updateMempoolProposingTransaction(tx: JsonRpcPoolTransactionEntry) {
         const getStmt = this.db.prepare<[Hex], { id: DBId }>(
             `SELECT id From transactions WHERE tx_hash = ?`,
         );
@@ -219,35 +355,76 @@ export class DB {
         if (txId) {
             const stmt = this.db.prepare<[TransactionStatus, number, DBId]>(`
 			UPDATE transactions 	
-			SET status = ?, proposed_at = ?
+			SET status = ?, proposing_at = ?
 			WHERE id = ?
 			`);
             return stmt.run(
-                TransactionStatus.Proposed,
+                TransactionStatus.Proposing,
                 getNowTimestamp(),
                 txId,
             );
         }
 
-        return this.saveProposedPoolTransaction(tx);
+        return this.saveProposingPoolTransaction(tx);
+    }
+
+    updateMempoolRejectedTransaction(
+        tx: JsonRpcPoolTransactionEntry,
+        reason: string,
+    ) {
+        const getStmt = this.db.prepare<[Hex], { id: DBId }>(
+            `SELECT id From transactions WHERE tx_hash = ?`,
+        );
+        const txId = getStmt.get(tx.transaction.hash)?.id;
+        if (txId) {
+            const stmt = this.db.prepare<
+                [TransactionStatus, number, string, DBId]
+            >(`
+		UPDATE transactions
+		SET status = ?, rejected_at = ?, reject_reason = ?
+		WHERE id = ?
+	    `);
+            return stmt.run(
+                TransactionStatus.Rejected,
+                getNowTimestamp(),
+                reason,
+                txId,
+            );
+        }
+
+        return this.saveRejectedPoolTransaction(tx, reason);
     }
 
     updateCommittedTransaction(
-        txHash: Hex,
+        tx: JsonRpcTransaction,
+        blockNumber: Hex,
         blockHash: Hex,
         blockTimestamp: number,
     ) {
-        const stmt = this.db.prepare<[TransactionStatus, Hex, number, Hex]>(`
+        const txHash = JsonRpcTransformers.transactionTo(tx).hash();
+
+        const getStmt = this.db.prepare<[Hex], { id: DBId }>(
+            `SELECT id From transactions WHERE tx_hash = ?`,
+        );
+        const txId = getStmt.get(txHash)?.id;
+        if (txId) {
+            const stmt = this.db.prepare<
+                [TransactionStatus, Hex, Hex, number, Hex]
+            >(`
 	    UPDATE transactions
-	    SET status = ?, committed_at_block_hash = ?, committed_at = ?
+	    SET status = ?, committed_at_block_number = ?, committed_at_block_hash = ?, committed_at = ?
 	    WHERE tx_hash = ? 
 	`);
-        stmt.run(
-            TransactionStatus.Committed,
-            blockHash,
-            blockTimestamp,
-            txHash,
-        );
+            return stmt.run(
+                TransactionStatus.Committed,
+                blockNumber,
+                blockHash,
+                blockTimestamp,
+                txHash,
+            );
+        }
+
+        return this.saveCommittedBlockTransaction(tx, blockNumber, blockHash);
     }
 
     listAllTransactions() {
@@ -256,6 +433,69 @@ export class DB {
 	`);
 
         return stmt.all();
+    }
+
+    getPendingTransactions() {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Pending}'
+	`);
+        return stmt.all();
+    }
+
+    getProposingTransactions() {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposing}'
+	`);
+        return stmt.all();
+    }
+
+    getRejectedTransactions() {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Rejected}'
+	`);
+        return stmt.all();
+    }
+
+    getProposedTransactionsByBlock(blockHash: Hex) {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposed}' AND proposed_at_block_hash = '${blockHash}'	
+	`);
+        return stmt.all();
+    }
+
+    getCommittedTransactionsByBlock(blockHash: Hex) {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Committed}' AND committed_at_block_hash = '${blockHash}'
+	`);
+        return stmt.all();
+    }
+
+    getTransactionByHash(txHash: Hex) {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE tx_hash = '${txHash}'
+	`);
+        return stmt.get();
+    }
+
+    getBlockHeaderByHash(blockHash: Hex) {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM block_header WHERE block_hash = '${blockHash}'
+	`);
+        return stmt.get();
+    }
+
+    getBlockHeaders(order: "ASC" | "DESC", limit: number) {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM block_header ORDER BY block_number ${order} LIMIT ${limit}	
+	`);
+        return stmt.all();
+    }
+
+    getTipBlockHeader() {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM block_header ORDER BY block_number DESC LIMIT 1	
+	`);
+        return stmt.get();
     }
 
     close(): void {

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS block_header (
   timestamp DATETIME NOT NULL,
   transactions_root TEXT NOT NULL,
   version TEXT NOT NULL
-)
+);
 
 CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,12 +24,15 @@ CREATE TABLE IF NOT EXISTS transactions (
     version TEXT,
     witnesses TEXT NOT NULL,
     type TEXT, -- tx type, eg: ckb transfer, udt transfer or any other known type
-    status INTEGER NOT NULL, -- 0: pending, 1: proposed, 2: committed, 3: rejected
+    status INTEGER NOT NULL, -- 0: pending, 1: proposing, 2: proposed, 3: committed, 4: rejected
     enter_pool_at DATETIME, -- the timestamp of the tx first seem in pool
+    proposing_at DATETIME, -- the timestamp of the tx first proposed in mempool
     proposed_at DATETIME,
     proposed_at_block_hash TEXT,
+    proposed_at_block_number TEXT,
     committed_at DATETIME,
     committed_at_block_hash TEXT,
+    committed_at_block_number TEXT,
     rejected_at DATETIME,
     rejected_reason TEXT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP

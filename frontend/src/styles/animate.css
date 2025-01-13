@@ -1,0 +1,17 @@
+@keyframes arrowUp {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-200%);
+    }
+}
+
+@keyframes numberFlip {
+    0% {
+        transform: perspective(200px) rotateX(0deg);
+    }
+    100% {
+        transform: perspective(200px) rotateX(360deg);
+    }
+}
