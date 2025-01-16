@@ -46,8 +46,7 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
             engine: engine,
             canvas: canvasRef.current,
             options: {
-                //background: "#A0CDB9",
-                background: "transparent", // 背景透明
+                background: "transparent",
                 width: carBoxSize.width,
                 height: carBoxSize.height,
                 wireframes: false,

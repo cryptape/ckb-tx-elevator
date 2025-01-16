@@ -8,7 +8,7 @@ export default defineConfig({
     },
     define: {
         "import.meta.env.VITE_HTTP_API_URL": JSON.stringify(
-            "http://localhost:3000",
+            "http://localhost:3000", //"http://13.251.229.198:3000", //"http://localhost:3000",
         ),
     },
 });

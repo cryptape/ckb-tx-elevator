@@ -159,6 +159,16 @@ export class Subscriber {
 
         this.ws.on("close", () => {
             logger.info(`Disconnected from CKB node ${this.ckbRpcUrl}`);
+
+            try {
+                logger.info(`doing a reconnect ${this.ckbRpcUrl}`);
+                this.ws = new WebSocket(this.ckbRpcUrl);
+            } catch (error: unknown) {
+                logger.error(
+                    `${this.ckbRpcUrl} reconnect failed: ${(error as Error).message}, shutting down...`,
+                );
+                process.exit(1);
+            }
         });
     }
 }

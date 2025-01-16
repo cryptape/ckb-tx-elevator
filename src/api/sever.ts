@@ -37,7 +37,12 @@ export function createServer(db: DB) {
         res.json(transactions);
     });
 
-    app.get("/proposed-txs", async (req: Request, res: Response) => {
+    app.get("/proposed-txs", async (_req: Request, res: Response) => {
+        const transactions = db.getProposedTransactions();
+        res.json(transactions);
+    });
+
+    app.get("/proposed-txs-by-block", async (req: Request, res: Response) => {
         const blockHash = req.query.blockHash as Hex;
         const transactions = db.getProposedTransactionsByBlock(blockHash);
         res.json(transactions);
