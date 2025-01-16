@@ -190,7 +190,7 @@ export class DB {
             [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number, string]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, cycles, size, fee, version, witnesses, status, rejected_at, reject_reason
+	    tx_hash, cycles, size, fee, version, witnesses, status, rejected_at, rejected_reason
 	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`);
 
@@ -384,7 +384,7 @@ export class DB {
                 [TransactionStatus, number, string, DBId]
             >(`
 		UPDATE transactions
-		SET status = ?, rejected_at = ?, reject_reason = ?
+		SET status = ?, rejected_at = ?, rejected_reason = ?
 		WHERE id = ?
 	    `);
             return stmt.run(
@@ -455,6 +455,13 @@ export class DB {
     getRejectedTransactions() {
         const stmt = this.db.prepare(`
 	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Rejected}'
+	`);
+        return stmt.all();
+    }
+
+    getProposedTransactions() {
+        const stmt = this.db.prepare(`
+	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposed}'	
 	`);
         return stmt.all();
     }

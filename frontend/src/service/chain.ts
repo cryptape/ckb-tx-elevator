@@ -36,11 +36,16 @@ export class ChainService {
         return response.data || [];
     }
 
-    static async getProposedTransactions(
+    static async getProposedTransactions(): Promise<Transaction[]> {
+        const response = await ApiService.get<Transaction[]>("/proposed-txs");
+        return response.data || [];
+    }
+
+    static async getProposedTransactionsByBlock(
         blockHash: Hex,
     ): Promise<Transaction[]> {
         const response = await ApiService.get<Transaction[]>(
-            `/proposed-txs?blockHash=${blockHash}`,
+            `/proposed-txs-by-block?blockHash=${blockHash}`,
         );
         return response.data || [];
     }

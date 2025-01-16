@@ -15,3 +15,19 @@
         transform: perspective(200px) rotateX(360deg);
     }
 }
+
+@keyframes flip {
+    0% {
+        transform: rotateY(0deg);
+    }
+    50% {
+        transform: rotateY(90deg);
+    }
+    100% {
+        transform: rotateY(180deg);
+    }
+}
+
+.flip-animation {
+    animation: flip 0.6s ease-in-out;
+}
