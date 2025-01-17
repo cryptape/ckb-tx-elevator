@@ -1,4 +1,5 @@
 import type { Hex } from "@ckb-ccc/core";
+import cors from "cors";
 import express, { type Request, type Response } from "express";
 import { Config } from "../core/config";
 import type { DB } from "../db";
@@ -7,20 +8,13 @@ import { logger } from "../util/logger";
 export function createServer(db: DB) {
     const app = express();
 
-    app.use((_req, res, next) => {
-        for (const origin of Config.allowOrigin) {
-            res.header("Access-Control-Allow-Origin", origin);
-        }
-        if (Config.allowOrigin.length > 0) {
-            res.header(
-                "Access-Control-Allow-Methods",
-                "GET, POST, PUT, DELETE",
-            );
-            res.header("Access-Control-Allow-Headers", "Content-Type");
-        }
-
-        next();
-    });
+    app.use(
+        cors({
+            origin: Config.allowOrigin,
+            methods: "GET, POST, PUT, DELETE",
+            allowedHeaders: "Content-Type",
+        }),
+    );
 
     app.get("/pending-txs", async (_req: Request, res: Response) => {
         const transactions = db.getPendingTransactions();
