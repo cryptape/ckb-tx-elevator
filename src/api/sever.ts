@@ -1,9 +1,9 @@
 import type { Hex } from "@ckb-ccc/core";
+import cors from "cors";
 import express, { type Request, type Response } from "express";
 import { Config } from "../core/config";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
-import cors from "cors";
 
 export function createServer(db: DB) {
     const app = express();
