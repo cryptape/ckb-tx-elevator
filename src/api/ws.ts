@@ -1,10 +1,20 @@
-import { WebSocketServer, WebSocket } from "ws";
-import { logger } from "../util/logger";
+import type { Server } from "node:http";
+import { type WebSocket, WebSocketServer } from "ws";
 import type { DB } from "../db";
-import { Server } from "http";
+import { logger } from "../util/logger";
+import { SnapshotEmitter } from "./emitter";
+import {
+    type SubMessage,
+    type SubMessageContent,
+    SubMessageType,
+} from "./type";
 
 export function createWsServer(httpServer: Server, db: DB) {
     const wss = new WebSocketServer({ server: httpServer });
+
+    const snapshotEmitter = new SnapshotEmitter({ db });
+    snapshotEmitter.startWorker();
+
     return {
         wss,
         start: () => {
@@ -18,40 +28,30 @@ export function createWsServer(httpServer: Server, db: DB) {
 
                 ws.on("message", async (message) => {
                     try {
-                        const parsedMessage = JSON.parse(message.toString());
+                        const parsedMessage: SubMessage = JSON.parse(
+                            message.toString(),
+                        );
                         logger.info(
                             `Received message from WebSocket client: ${JSON.stringify(parsedMessage)}`,
                         );
 
-                        if (parsedMessage.type === "getTipBlockData") {
-                            const blockHeader = db.getTipBlockHeader();
-                            if (!blockHeader) {
-                                ws.send(
-                                    JSON.stringify({
-                                        error: "No tip block found",
-                                    }),
+                        if (parsedMessage.type === SubMessageType.NewSnapshot) {
+                            snapshotEmitter
+                                .getEmitter()
+                                .on(
+                                    SubMessageType.NewSnapshot,
+                                    (snapshot: SubMessageContent) => {
+                                        ws.send(
+                                            JSON.stringify({
+                                                data: snapshot,
+                                            }),
+                                        );
+                                    },
                                 );
-                                return;
-                            }
-                            const committedTransactions =
-                                db.getCommittedTransactionsByBlock(
-                                    blockHeader.block_hash,
-                                );
-                            const proposedTransactions =
-                                db.getProposedTransactionsByBlock(
-                                    blockHeader.block_hash,
-                                );
-                            ws.send(
-                                JSON.stringify({
-                                    blockHeader,
-                                    committedTransactions,
-                                    proposedTransactions,
-                                }),
-                            );
                         } else {
                             ws.send(
                                 JSON.stringify({
-                                    error: "Unknow message type, Please send `getTipBlockData` for now",
+                                    error: `Unknown message type, Please send ${SubMessageType.NewSnapshot} for now`,
                                 }),
                             );
                         }
@@ -73,7 +73,7 @@ export function createWsServer(httpServer: Server, db: DB) {
                     logger.error("WebSocket error:", error);
                 });
             });
-            logger.info(`WebSocket server started..`);
+            logger.info("WebSocket server started..");
         },
     };
 }

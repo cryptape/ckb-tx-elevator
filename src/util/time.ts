@@ -1,3 +1,5 @@
 export function getNowTimestamp(): number {
-    return new Date().getTime();
+    const now = new Date();
+    const timestampSeconds = Math.floor(now.getTime() / 1000); // Convert milliseconds to seconds
+    return timestampSeconds;
 }

@@ -1,10 +1,10 @@
+import type { Server } from "node:http";
 import type { Hex } from "@ckb-ccc/core";
 import cors from "cors";
 import express, { type Request, type Response, type Express } from "express";
 import { Config } from "../core/config";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
-import { Server } from "http";
 
 export function createHttpServer(db: DB): {
     app: Express;

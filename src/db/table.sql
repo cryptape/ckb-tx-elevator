@@ -81,3 +81,22 @@ CREATE TABLE IF NOT EXISTS output (
     FOREIGN KEY (lock_script_id) REFERENCES script(id),
     FOREIGN KEY (type_script_id) REFERENCES script(id)
 );
+
+-- create index on tables
+-- block_number on block_header
+CREATE INDEX IF NOT EXISTS idx_block_header_block_number ON block_header (block_number);
+
+-- tx_hash on transactions
+CREATE INDEX IF NOT EXISTS idx_transactions_tx_hash ON transactions (tx_hash);
+
+-- status on transactions
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions (status);
+
+-- proposed_at_block_number on transactions
+CREATE INDEX IF NOT EXISTS idx_transactions_proposed_at_block_number ON transactions (proposed_at_block_number);
+
+-- committed_at_block_number on transactions
+CREATE INDEX IF NOT EXISTS idx_transactions_committed_at_block_number ON transactions (committed_at_block_number);
+
+-- outpoint on input 
+CREATE INDEX IF NOT EXISTS idx_input_outpoint ON input (previous_output_tx_hash, previous_output_index);
