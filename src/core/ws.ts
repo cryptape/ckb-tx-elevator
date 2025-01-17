@@ -163,6 +163,7 @@ export class Subscriber {
             try {
                 logger.info(`doing a reconnect ${this.ckbRpcUrl}`);
                 this.ws = new WebSocket(this.ckbRpcUrl);
+                this.run();
             } catch (error: unknown) {
                 logger.error(
                     `${this.ckbRpcUrl} reconnect failed: ${(error as Error).message}, shutting down...`,
