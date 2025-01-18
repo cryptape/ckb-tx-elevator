@@ -1,6 +1,5 @@
-import { h } from "preact";
 import { useEffect, useState, useRef } from "preact/hooks";
-import { Transaction } from "../../service/api";
+import { Transaction } from "../../service/type";
 
 type TxStatus = "pending" | "proposing" | "proposed" | "committed" | "none";
 
@@ -10,7 +9,7 @@ interface TxChange {
     to: TxStatus;
 }
 
-interface QueueProps {
+export interface QueueProps {
     initialProposedTxs: Transaction[] | null;
     initialCommittedTxs: Transaction[] | null;
     initialPendingTxs: Transaction[] | null;
@@ -38,119 +37,153 @@ const QueueComponent: React.FC<QueueProps> = ({
         initialProposingTxs,
     );
     const [stateChanges, setStateChanges] = useState<TxChange[]>([]);
-    const [movingTx, setMovingTx] = useState<{
-        hash: string;
-        from: TxStatus;
-        to: TxStatus;
-        startX: number;
-        startY: number;
-        endX: number;
-        endY: number;
-        isAnimating: boolean;
-        node: HTMLElement | null;
-    } | null>(null);
-
+    const movingTxs = useRef<Map<string, { from: TxStatus; to: TxStatus }>>(
+        new Map(),
+    );
+    const containerRef = useRef<HTMLDivElement>(null);
     const txRefs = useRef(new Map<string, HTMLElement>());
+    const queueRefs = useRef(new Map<TxStatus, HTMLElement>());
+
+    useEffect(() => {
+        if (containerRef.current) {
+            const container = containerRef.current;
+            const pendingQueue = container.querySelector(
+                '[data-queue="pending"]',
+            ) as HTMLElement;
+            const proposingQueue = container.querySelector(
+                '[data-queue="proposing"]',
+            ) as HTMLElement;
+            const proposedQueue = container.querySelector(
+                '[data-queue="proposed"]',
+            ) as HTMLElement;
+            const committedQueue = container.querySelector(
+                '[data-queue="committed"]',
+            ) as HTMLElement;
+
+            queueRefs.current.set("pending", pendingQueue);
+            queueRefs.current.set("proposing", proposingQueue);
+            queueRefs.current.set("proposed", proposedQueue);
+            queueRefs.current.set("committed", committedQueue);
+        }
+    }, []);
 
     useEffect(() => {
         if (txChanges && txChanges.length > 0) {
             setStateChanges((prev) => [...prev, ...txChanges]);
-
             let newProposedTxs = proposedTxs ? [...proposedTxs] : [];
             let newCommittedTxs = committedTxs ? [...committedTxs] : [];
             let newPendingTxs = pendingTxs ? [...pendingTxs] : [];
             let newProposingTxs = proposingTxs ? [...proposingTxs] : [];
-
             txChanges.forEach((txChange) => {
                 const { hash, from, to } = txChange;
-
-                const updateQueue = (
-                    currentTxs: Transaction[] | null,
-                    status: TxStatus,
-                    newTxs: Transaction[],
-                ) => {
-                    if (!currentTxs) return newTxs;
-
-                    let txToRemove = null;
-
-                    if (from === status) {
-                        txToRemove = currentTxs.find(
-                            (tx) => tx.tx_hash === hash,
-                        );
-                        newTxs = newTxs.filter((tx) => tx.tx_hash !== hash);
-                    }
-
-                    if (to === status) {
-                        const txToAdd =
-                            initialProposedTxs?.find(
-                                (tx) => tx.tx_hash === hash,
-                            ) ||
-                            initialCommittedTxs?.find(
-                                (tx) => tx.tx_hash === hash,
-                            ) ||
-                            initialPendingTxs?.find(
-                                (tx) => tx.tx_hash === hash,
-                            ) ||
-                            initialProposingTxs?.find(
-                                (tx) => tx.tx_hash === hash,
-                            );
-
-                        if (txToAdd) {
-                            const isExisting = newTxs.some(
-                                (tx) => tx.tx_hash === txToAdd.tx_hash,
-                            );
-                            if (!isExisting) {
-                                const startNode = txRefs.current.get(hash);
-                                const queueContainer = document.querySelector(
-                                    `[data-queue="${to}"]`,
-                                ) as HTMLElement;
-                                const endRect =
-                                    queueContainer?.getBoundingClientRect();
-
-                                if (startNode && endRect) {
-                                    const startRect =
-                                        startNode.getBoundingClientRect();
-                                    setMovingTx({
-                                        hash: txToAdd.tx_hash,
-                                        from,
-                                        to,
-                                        startX: startRect.left,
-                                        startY: startRect.top,
-                                        endX: endRect.left + 10, // 稍微调整偏移
-                                        endY: endRect.top + 20, // 稍微调整偏移
-                                        isAnimating: true,
-                                        node: startNode,
-                                    });
-                                }
-
-                                newTxs.push(txToAdd);
-                            }
+                movingTxs.current.set(hash, { from, to });
+                // Update queues based on the transaction's new status
+                switch (to) {
+                    case "pending":
+                        if (!newPendingTxs.some((tx) => tx.tx_hash === hash)) {
+                            const tx =
+                                initialProposedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialCommittedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialProposingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialPendingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                );
+                            if (tx) newPendingTxs.push(tx);
                         }
-                    }
-                    return newTxs;
-                };
-                newProposedTxs = updateQueue(
-                    newProposedTxs,
-                    "proposed",
-                    newProposedTxs,
-                );
-                newCommittedTxs = updateQueue(
-                    newCommittedTxs,
-                    "committed",
-                    newCommittedTxs,
-                );
-                newPendingTxs = updateQueue(
-                    newPendingTxs,
-                    "pending",
-                    newPendingTxs,
-                );
-                newProposingTxs = updateQueue(
-                    newProposingTxs,
-                    "proposing",
-                    newProposingTxs,
-                );
+                        break;
+                    case "proposing":
+                        if (
+                            !newProposingTxs.some((tx) => tx.tx_hash === hash)
+                        ) {
+                            const tx =
+                                initialProposedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialCommittedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialPendingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialProposingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                );
+                            if (tx) newProposingTxs.push(tx);
+                        }
+                        break;
+                    case "proposed":
+                        if (!newProposedTxs.some((tx) => tx.tx_hash === hash)) {
+                            const tx =
+                                initialCommittedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialPendingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialProposingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialProposedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                );
+                            if (tx) newProposedTxs.push(tx);
+                        }
+                        break;
+                    case "committed":
+                        if (
+                            !newCommittedTxs.some((tx) => tx.tx_hash === hash)
+                        ) {
+                            const tx =
+                                initialProposedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialPendingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialProposingTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                ) ||
+                                initialCommittedTxs?.find(
+                                    (tx) => tx.tx_hash === hash,
+                                );
+                            if (tx) newCommittedTxs.push(tx);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                // Remove from the original queue
+                switch (from) {
+                    case "pending":
+                        newPendingTxs = newPendingTxs.filter(
+                            (tx) => tx.tx_hash !== hash,
+                        );
+                        break;
+                    case "proposing":
+                        newProposingTxs = newProposingTxs.filter(
+                            (tx) => tx.tx_hash !== hash,
+                        );
+                        break;
+                    case "proposed":
+                        newProposedTxs = newProposedTxs.filter(
+                            (tx) => tx.tx_hash !== hash,
+                        );
+                        break;
+                    case "committed":
+                        newCommittedTxs = newCommittedTxs.filter(
+                            (tx) => tx.tx_hash !== hash,
+                        );
+                        break;
+                    default:
+                        break;
+                }
             });
-
             setProposedTxs(newProposedTxs);
             setCommittedTxs(newCommittedTxs);
             setPendingTxs(newPendingTxs);
@@ -158,24 +191,41 @@ const QueueComponent: React.FC<QueueProps> = ({
         }
     }, [
         txChanges,
+        initialProposedTxs,
         initialCommittedTxs,
         initialPendingTxs,
-        initialProposedTxs,
         initialProposingTxs,
-        proposedTxs,
-        committedTxs,
-        pendingTxs,
-        proposingTxs,
     ]);
 
-    // 处理动画结束
+    const animateTx = (hash: string, from: TxStatus, to: TxStatus) => {
+        const fromQueue = queueRefs.current.get(from);
+        const toQueue = queueRefs.current.get(to);
+        const txElement = txRefs.current.get(hash);
+
+        if (!fromQueue || !toQueue || !txElement) return;
+
+        const fromRect = fromQueue.getBoundingClientRect();
+        const toRect = toQueue.getBoundingClientRect();
+
+        const deltaX = toRect.left - fromRect.left;
+        const deltaY = toRect.top - fromRect.top;
+
+        txElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        txElement.style.transition = "transform 0.5s ease-in-out";
+
+        setTimeout(() => {
+            txElement.style.transition = "";
+            txElement.style.transform = "";
+            movingTxs.current.delete(hash);
+        }, 500);
+    };
+
     useEffect(() => {
-        if (movingTx && movingTx.isAnimating) {
-            setTimeout(() => {
-                setMovingTx(null);
-            }, 500);
-        }
-    }, [movingTx]);
+        movingTxs.current.forEach((value, key) => {
+            const { from, to } = value;
+            animateTx(key, from, to);
+        });
+    }, [stateChanges]);
 
     const renderQueue = (
         txs: Transaction[] | null,
@@ -183,11 +233,15 @@ const QueueComponent: React.FC<QueueProps> = ({
         status: TxStatus,
     ) => {
         return (
-            <div className="w-1/4 p-4 border rounded" data-queue={status}>
+            <div
+                className="w-1/4 h-full p-4 border border-black rounded relative min-w-[200px] flex flex-col"
+                data-queue={status}
+                ref={(el) => queueRefs.current.set(status, el as HTMLElement)}
+            >
                 <h3 className="font-bold mb-2">
                     {title} ({txs?.length || 0})
                 </h3>
-                {txs && txs.length > 0 ? (
+                {txs &&
                     txs.map((tx) => (
                         <div
                             key={tx.tx_hash}
@@ -196,48 +250,21 @@ const QueueComponent: React.FC<QueueProps> = ({
                                     txRefs.current.set(tx.tx_hash, el);
                                 }
                             }}
-                            className="bg-gray-100 p-2 mb-1 rounded border border-gray-300"
+                            className="bg-gray-100 p-2 mb-1 rounded border border-gray-300 relative"
                         >
                             {tx.tx_hash.slice(0, 22)}
                         </div>
-                    ))
-                ) : (
-                    <p className="text-gray-500">No transactions in {title} </p>
-                )}
+                    ))}
             </div>
         );
     };
 
-    const renderMovingTx = () => {
-        if (!movingTx || !movingTx.isAnimating) return null;
-
-        const style = {
-            position: "absolute",
-            left: `${movingTx.startX}px`,
-            top: `${movingTx.startY}px`,
-            transition: "all 0.5s ease-in-out",
-            transform: `translate(${movingTx.endX - movingTx.startX}px, ${movingTx.endY - movingTx.startY}px)`,
-            zIndex: 10,
-            pointerEvents: "none",
-        };
-
-        return (
-            <div
-                style={style}
-                className="bg-blue-200 p-2 rounded border border-blue-300"
-            >
-                {movingTx.hash.slice(0, 22)}
-            </div>
-        );
-    };
     return (
-        <div className="flex flex-col relative">
-            {renderMovingTx()}
-            <div className="flex justify-between mt-4 mb-8">
+        <div className="flex flex-col relative h-screen" ref={containerRef}>
+            <div className="flex justify-start flex-wrap mt-4 mb-8 h-full">
                 {renderQueue(pendingTxs, "Pending", "pending")}
-
                 {renderQueue(proposedTxs, "Proposed", "proposed")}
-                {renderQueue(proposingTxs, "Proposing", "proposing")}
+                {renderQueue(proposingTxs, "Committing", "proposing")}
                 {renderQueue(committedTxs, "Committed", "committed")}
             </div>
         </div>

@@ -1,6 +1,6 @@
 import Matter from "matter-js";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { BlockHeader, Transaction } from "../../service/api";
+import { BlockHeader, Transaction } from "../../service/type";
 import {
     boxSizeToMatterSize,
     carBoxCenterPosX,

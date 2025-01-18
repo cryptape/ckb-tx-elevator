@@ -575,24 +575,18 @@ export class DB {
 
         const [
             tipCommittedTransactions,
-            tipProposedTransactions,
             pendingTransactions,
             proposingTransactions,
             proposedTransactions,
         ] = await Promise.all([
             this.getCommittedTransactionsByBlock(blockHeader.block_hash),
-            this.getProposedTransactionsByBlock(blockHeader.block_hash),
             this.getPendingTransactions(),
             this.getProposingTransactions(),
             this.getProposedTransactions(),
         ]);
 
         return {
-            tipBlock: {
-                blockHeader,
-                tipCommittedTransactions,
-                tipProposedTransactions,
-            },
+            tipCommittedTransactions,
             pendingTransactions,
             proposingTransactions,
             proposedTransactions,

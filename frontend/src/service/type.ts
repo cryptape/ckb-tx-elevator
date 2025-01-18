@@ -1,3 +1,5 @@
+import { Hex } from "@ckb-ccc/core";
+
 export enum TransactionTypeEnum {
     other = 0,
     ckb,
@@ -60,4 +62,30 @@ export namespace TransactionType {
                 return "bg-box-beige";
         }
     }
+}
+
+export interface Transaction {
+    tx_hash: Hex;
+    // Add other transaction fields as needed
+    size?: Hex;
+    fee?: Hex;
+}
+
+export interface BlockHeader {
+    block_hash: Hex;
+    block_number: string;
+    // Add other block header fields as needed
+}
+
+export interface TipBlockResponse {
+    blockHeader: BlockHeader;
+    committedTransactions: Transaction[];
+    proposedTransactions: Transaction[];
+}
+
+export interface ChainSnapshot {
+    tipCommittedTransactions: Transaction[];
+    pendingTransactions: Transaction[];
+    proposingTransactions: Transaction[];
+    proposedTransactions: Transaction[];
 }

@@ -1,19 +1,20 @@
 import { useEffect, useState } from "preact/hooks";
-import { ChainService, TipBlockResponse } from "../../service/api";
+import { ChainService } from "../../service/api";
 import ElevatorCar from "./car";
 import ElevatorUpButton from "./up-btn";
 import ElevatorPanel from "./panel";
 import ElevatorHeader from "./header";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import { TipBlockResponse } from "../../service/type";
 
 export default function Elevator() {
     const chainTheme = useAtomValue(chainThemeAtom);
     const [tipBlock, setTipBlock] = useState<TipBlockResponse>(undefined);
     const [doorClosing, setDoorClosing] = useState(false);
 
-    // Update effect to fetch all data
-    const fetch = async () => {
+    // subscribe to new block
+    const subNewBlock = async () => {
         ChainService.subscribeNewBlock((newBlock) => {
             if (newBlock.blockHeader) {
                 setTipBlock((prev) => {
@@ -31,7 +32,9 @@ export default function Elevator() {
         });
     };
     useEffect(() => {
-        fetch();
+        ChainService.wsClient.connect(() => {
+            subNewBlock();
+        });
     }, []);
 
     const bgElevatorFrame =

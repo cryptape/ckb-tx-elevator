@@ -1,25 +1,12 @@
 import { HttpApiService } from "./http";
 import { Hex } from "@ckb-ccc/core";
 import { WsApiService } from "./ws";
-
-export interface Transaction {
-    tx_hash: Hex;
-    // Add other transaction fields as needed
-    size?: Hex;
-    fee?: Hex;
-}
-
-export interface BlockHeader {
-    block_hash: Hex;
-    block_number: string;
-    // Add other block header fields as needed
-}
-
-export interface TipBlockResponse {
-    blockHeader: BlockHeader;
-    committedTransactions: Transaction[];
-    proposedTransactions: Transaction[];
-}
+import {
+    BlockHeader,
+    ChainSnapshot,
+    TipBlockResponse,
+    Transaction,
+} from "./type";
 
 export class ChainService {
     static wsClient: WsApiService = new WsApiService({});
@@ -95,16 +82,13 @@ export class ChainService {
         return response.data || [];
     }
 
-    static async subscribeNewSnapshot(onmessage: (_data: any) => void) {
-        this.wsClient.connect(() => {
-            this.wsClient.send("newSnapshot", {});
-        });
+    static async subscribeNewSnapshot(
+        onmessage: (_data: ChainSnapshot) => void,
+    ) {
+        this.wsClient.send("newSnapshot", {});
 
         this.wsClient.on("newSnapshot", (message: any) => {
-            console.log(
-                "received newSnapshot: ",
-                +message.data.tipBlock?.blockHeader?.block_number,
-            );
+            console.log("received newSnapshot: ", message.data);
             onmessage(message.data);
         });
     }
@@ -112,9 +96,7 @@ export class ChainService {
     static async subscribeNewBlock(
         onmessage: (_data: TipBlockResponse) => void,
     ) {
-        this.wsClient.connect(() => {
-            this.wsClient.send("newBlock", {});
-        });
+        this.wsClient.send("newBlock", {});
 
         this.wsClient.on("newBlock", (message: any) => {
             console.log(

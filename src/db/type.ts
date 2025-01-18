@@ -48,11 +48,7 @@ export interface TransactionSnapshot {
 }
 
 export interface ChainSnapshot {
-    tipBlock: {
-        blockHeader: DBBlockHeader;
-        tipCommittedTransactions: DBTransaction[];
-        tipProposedTransactions: DBTransaction[];
-    };
+    tipCommittedTransactions: DBTransaction[];
     pendingTransactions: DBTransaction[];
     proposingTransactions: DBTransaction[];
     proposedTransactions: DBTransaction[];
