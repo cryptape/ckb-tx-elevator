@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "preact/hooks";
-import { Transaction } from "../../service/chain";
+import { Transaction } from "../../service/api";
 
 type TxStatus = "pending" | "proposing" | "proposed" | "committed" | "none";
 

@@ -43,6 +43,7 @@ export function createWsServer(httpServer: Server, db: DB) {
                                     (snapshot: SubMessageContent) => {
                                         ws.send(
                                             JSON.stringify({
+                                                type: SubMessageType.NewSnapshot,
                                                 data: snapshot,
                                             }),
                                         );

@@ -1,7 +1,7 @@
 import Matter from "matter-js";
 import { FunctionalComponent } from "preact";
 import { useEffect, useRef } from "preact/hooks";
-import { Transaction } from "../../service/chain";
+import { Transaction } from "../../service/api";
 import { randomFillStyleColor, transactionSquareSize } from "../elevator/util";
 
 export interface PoolSceneProp {

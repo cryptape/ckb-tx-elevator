@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Hex } from "@ckb-ccc/core";
+import { type Hex, ccc } from "@ckb-ccc/core";
 import {
     type JsonRpcBlockHeader,
     type JsonRpcTransaction,
@@ -13,6 +13,8 @@ import type {
     JsonRpcTransactionView,
     PoolTransactionReject,
 } from "../core/type";
+import { calcTxSize, isCellBaseTx } from "../util/chain";
+import { logger } from "../util/logger";
 import { getNowTimestamp } from "../util/time";
 import {
     type ChainSnapshot,
@@ -266,11 +268,11 @@ export class DB {
         blockHash: Hex,
     ) {
         const txStmt = this.db.prepare<
-            [Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+            [Hex, Hex, Hex, string, TransactionStatus, number, Hex, Hex]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, version, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
-	) VALUES (?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, version, size, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	     `);
 
         const txView: JsonRpcTransactionView = {
@@ -278,12 +280,31 @@ export class DB {
             ...tx,
         };
 
+        const txSize: Hex = `0x${calcTxSize(tx).toString(16)}`;
+
+        if (isCellBaseTx(tx)) {
+            // CellBase tx is a special case that we don't save the relatedData like inputs and outputs
+            logger.debug(`Saving CellBase tx: ${txView.hash}`);
+            return txStmt.run(
+                txView.hash,
+                txView.version,
+                txSize,
+                JSON.stringify(txView.witnesses),
+                TransactionStatus.Committed,
+                getNowTimestamp(),
+                blockNumber,
+                blockHash,
+            );
+        }
+
+        // Save normal transaction
         // Start a transaction for atomic operations
         this.db.transaction(() => {
             // Insert main transaction
             const result = txStmt.run(
                 txView.hash,
                 txView.version,
+                txSize,
                 JSON.stringify(txView.witnesses),
                 TransactionStatus.Committed,
                 getNowTimestamp(),
@@ -424,7 +445,7 @@ export class DB {
             "SELECT id From transactions WHERE tx_hash = ?",
         );
         const txId = getStmt.get(txHash)?.id;
-        if (txId) {
+        if (txId != null) {
             const stmt = this.db.prepare<
                 [TransactionStatus, Hex, Hex, number, number, Hex]
             >(`
@@ -546,21 +567,25 @@ export class DB {
         return stmt.get();
     }
 
-    getChainSnapshot(): ChainSnapshot | null {
+    async getChainSnapshot(): Promise<ChainSnapshot | null> {
         const blockHeader = this.getTipBlockHeader();
         if (!blockHeader) {
             return null;
         }
 
-        const tipCommittedTransactions = this.getCommittedTransactionsByBlock(
-            blockHeader.block_hash,
-        );
-        const tipProposedTransactions = this.getProposedTransactionsByBlock(
-            blockHeader.block_hash,
-        );
-        const pendingTransactions = this.getPendingTransactions();
-        const proposingTransactions = this.getProposingTransactions();
-        const proposedTransactions = this.getProposedTransactions();
+        const [
+            tipCommittedTransactions,
+            tipProposedTransactions,
+            pendingTransactions,
+            proposingTransactions,
+            proposedTransactions,
+        ] = await Promise.all([
+            this.getCommittedTransactionsByBlock(blockHeader.block_hash),
+            this.getProposedTransactionsByBlock(blockHeader.block_hash),
+            this.getPendingTransactions(),
+            this.getProposingTransactions(),
+            this.getProposedTransactions(),
+        ]);
 
         return {
             tipBlock: {

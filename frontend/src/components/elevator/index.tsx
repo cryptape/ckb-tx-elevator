@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import { ChainService } from "../../service/chain";
+import { ChainService } from "../../service/api";
 import ElevatorCar from "./car";
 import ElevatorUpButton from "./up-btn";
 import ElevatorPanel from "./panel";
@@ -9,24 +9,29 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 
 export default function Elevator() {
     const chainTheme = useAtomValue(chainThemeAtom);
-    const [proposedTxs, setProposedTxs] = useState([]);
-    const [committedTxs, setCommittedTxs] = useState([]);
-    const [blockHeader, setBlockHeader] = useState(undefined);
-    const [currentTipNumber, setCurrentTipNumber] = useState(undefined);
+    const [tipBlock, setTipBlock] = useState(undefined);
     const [doorClosing, setDoorClosing] = useState(false);
 
     // Update effect to fetch all data
+    const fetch = async () => {
+        ChainService.subscribeNewSnapshot((snapshot) => {
+            if (snapshot.tipBlock) {
+                setTipBlock((prev) => {
+                    if (
+                        prev == null ||
+                        prev?.blockHeader?.block_number <
+                            snapshot.tipBlock.blockHeader.block_number
+                    ) {
+                        return snapshot.tipBlock || undefined;
+                    } else {
+                        return prev;
+                    }
+                });
+            }
+        });
+    };
     useEffect(() => {
-        const fetchData = async () => {
-            const [tipBlockTxs] = await Promise.all([
-                ChainService.getTipBlockTransactions(),
-            ]);
-            setProposedTxs(tipBlockTxs.proposedTransactions);
-            setCommittedTxs(tipBlockTxs.committedTransactions);
-            setBlockHeader(tipBlockTxs.blockHeader);
-        };
-        const task = setInterval(fetchData, 3000);
-        return () => clearInterval(task);
+        fetch();
     }, []);
 
     const bgElevatorFrame =
@@ -49,20 +54,20 @@ export default function Elevator() {
                 className={`${bgElevatorFrame} flex flex-col justify-center w-min mx-auto rounded-lg border-[20px] ${borderBlack}`}
             >
                 <ElevatorHeader
-                    blockNumber={+blockHeader?.block_number}
+                    blockNumber={+tipBlock?.blockHeader.block_number}
                     doorClosing={doorClosing}
                 />
                 <div className={"px-20"}>
                     <ElevatorCar
-                        transactions={committedTxs}
-                        blockHeader={blockHeader}
+                        blockHeader={tipBlock?.blockHeader}
+                        transactions={tipBlock?.tipCommittedTransactions}
                         setFromDoorClosing={setDoorClosing}
                     />
                 </div>
             </div>
 
             <ElevatorPanel
-                transactionNumber={committedTxs.length}
+                transactionNumber={tipBlock?.tipCommittedTransactions.length}
                 sizeBytes={20}
                 occupationPercentage={20}
             />

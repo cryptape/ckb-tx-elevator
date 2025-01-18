@@ -92,6 +92,20 @@ export function createHttpServer(db: DB): {
         res.json(blockHeaders);
     });
 
+    app.get("/tx-by-hash", async (req: Request, res: Response) => {
+        const txHash = req.query.tx_hash;
+        if (
+            typeof txHash !== "string" ||
+            txHash.startsWith("0x") === false ||
+            txHash.length !== 66
+        ) {
+            res.json(`illegal tx_hash: ${txHash}`);
+        } else {
+            const tx = db.getTransactionByHash(txHash as Hex);
+            res.json(tx);
+        }
+    });
+
     app.get("/", (_req: Request, res: Response) => {
         res.send("Welcome to CKB TX Elevator API!");
     });

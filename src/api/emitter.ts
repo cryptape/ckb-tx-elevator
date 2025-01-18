@@ -125,7 +125,7 @@ export class SnapshotEmitter {
 
         if (isNewSnapshot) {
             const emitNewSnapshot = async () => {
-                const snapshot = this.db.getChainSnapshot();
+                const snapshot = await this.db.getChainSnapshot();
                 if (snapshot) {
                     const msg = {
                         type: SubMessageType.NewSnapshot,

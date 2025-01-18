@@ -1,7 +1,7 @@
 import Matter from "matter-js";
 import { FunctionalComponent } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { ChainService, Transaction } from "../../service/chain";
+import { ChainService, Transaction } from "../../service/api";
 import PoolScene from "./scene";
 import QueueComponent from "./motion";
 

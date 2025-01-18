@@ -1,6 +1,6 @@
 import Matter from "matter-js";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { BlockHeader, Transaction } from "../../service/chain";
+import { BlockHeader, Transaction } from "../../service/api";
 import {
     boxSizeToMatterSize,
     carBoxCenterPosX,
@@ -137,7 +137,7 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
 
     useEffect(() => {
         run();
-    }, [transactions.length]);
+    }, [blockHeader?.block_number]);
 
     useEffect(() => {
         if (setFromDoorClosing) {
