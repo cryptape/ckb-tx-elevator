@@ -108,4 +108,20 @@ export class ChainService {
             onmessage(message.data);
         });
     }
+
+    static async subscribeNewBlock(
+        onmessage: (_data: TipBlockResponse) => void,
+    ) {
+        this.wsClient.connect(() => {
+            this.wsClient.send("newBlock", {});
+        });
+
+        this.wsClient.on("newBlock", (message: any) => {
+            console.log(
+                "received newBlock: ",
+                +message.data.blockHeader?.block_number,
+            );
+            onmessage(message.data);
+        });
+    }
 }

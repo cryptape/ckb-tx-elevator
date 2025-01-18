@@ -56,7 +56,6 @@ export class WsApiService {
         this.socket.onmessage = (event) => {
             try {
                 const message = JSON.parse(event.data) as WebSocketMessage<any>;
-                console.log(message);
                 this.handleMessage(message);
             } catch (error) {
                 this.log("error", "Failed to parse message", error);

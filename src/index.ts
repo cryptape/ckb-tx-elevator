@@ -1,10 +1,10 @@
 import cluster from "node:cluster";
 import os from "node:os";
 import process from "node:process";
-import { SnapshotEmitter } from "./api/emitter";
+import { testnetDB } from "./core";
+import { testnetSubscriber } from "./core";
 import { Config } from "./core/config";
-import { testnetDB } from "./core/db";
-import { testnetSubscriber } from "./core/sub";
+import { BlockEmitter, SnapshotEmitter } from "./core/emitter";
 import { runServer } from "./server";
 import { logger } from "./util/logger";
 
@@ -21,6 +21,9 @@ if (cluster.isPrimary) {
 
     const snapshotEmitter = new SnapshotEmitter({ db: testnetDB });
     snapshotEmitter.startForever();
+
+    const blockEmitter = new BlockEmitter({ db: testnetDB });
+    blockEmitter.startForever();
 
     cluster.on("exit", (worker, _code, _signal) => {
         if (worker.process.exitCode === 0) {

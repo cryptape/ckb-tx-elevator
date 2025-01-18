@@ -1,8 +1,8 @@
 import type { Server } from "node:http";
 import { type WebSocket, WebSocketServer } from "ws";
+import { BlockEmitter, SnapshotEmitter } from "../core/emitter";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
-import { SnapshotEmitter } from "./emitter";
 import {
     type SubMessage,
     type SubMessageContent,
@@ -14,6 +14,9 @@ export function createWsServer(httpServer: Server, db: DB) {
 
     const snapshotEmitter = new SnapshotEmitter({ db });
     snapshotEmitter.startWorker();
+
+    const blockEmitter = new BlockEmitter({ db });
+    blockEmitter.startWorker();
 
     return {
         wss,
@@ -35,26 +38,45 @@ export function createWsServer(httpServer: Server, db: DB) {
                             `Received message from WebSocket client: ${JSON.stringify(parsedMessage)}`,
                         );
 
-                        if (parsedMessage.type === SubMessageType.NewSnapshot) {
-                            snapshotEmitter
-                                .getEmitter()
-                                .on(
-                                    SubMessageType.NewSnapshot,
-                                    (snapshot: SubMessageContent) => {
-                                        ws.send(
-                                            JSON.stringify({
-                                                type: SubMessageType.NewSnapshot,
-                                                data: snapshot,
-                                            }),
-                                        );
-                                    },
+                        switch (parsedMessage.type) {
+                            case SubMessageType.NewSnapshot:
+                                snapshotEmitter
+                                    .getEmitter()
+                                    .on(
+                                        SubMessageType.NewSnapshot,
+                                        (snapshot: SubMessageContent) => {
+                                            ws.send(
+                                                JSON.stringify({
+                                                    type: SubMessageType.NewSnapshot,
+                                                    data: snapshot,
+                                                }),
+                                            );
+                                        },
+                                    );
+                                break;
+
+                            case SubMessageType.NewBlock:
+                                blockEmitter
+                                    .getEmitter()
+                                    .on(
+                                        SubMessageType.NewBlock,
+                                        (block: SubMessageContent) => {
+                                            ws.send(
+                                                JSON.stringify({
+                                                    type: SubMessageType.NewBlock,
+                                                    data: block,
+                                                }),
+                                            );
+                                        },
+                                    );
+                                break;
+                            default:
+                                ws.send(
+                                    JSON.stringify({
+                                        error: `Unknown message type, Please send ${SubMessageType.NewSnapshot} for now`,
+                                    }),
                                 );
-                        } else {
-                            ws.send(
-                                JSON.stringify({
-                                    error: `Unknown message type, Please send ${SubMessageType.NewSnapshot} for now`,
-                                }),
-                            );
+                                break;
                         }
                     } catch (e) {
                         logger.error("Error handling WebSocket message:", e);

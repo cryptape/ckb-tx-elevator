@@ -1,7 +1,7 @@
 import { createHttpServer } from "./api/http";
 import { createWsServer } from "./api/ws";
+import { readonlyTestnetDB } from "./core";
 import { Config } from "./core/config";
-import { readonlyTestnetDB } from "./core/db";
 
 export async function runServer() {
     const testnetHttpSever = createHttpServer(readonlyTestnetDB);

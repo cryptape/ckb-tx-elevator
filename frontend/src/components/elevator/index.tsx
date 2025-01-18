@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import { ChainService } from "../../service/api";
+import { ChainService, TipBlockResponse } from "../../service/api";
 import ElevatorCar from "./car";
 import ElevatorUpButton from "./up-btn";
 import ElevatorPanel from "./panel";
@@ -9,20 +9,20 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 
 export default function Elevator() {
     const chainTheme = useAtomValue(chainThemeAtom);
-    const [tipBlock, setTipBlock] = useState(undefined);
+    const [tipBlock, setTipBlock] = useState<TipBlockResponse>(undefined);
     const [doorClosing, setDoorClosing] = useState(false);
 
     // Update effect to fetch all data
     const fetch = async () => {
-        ChainService.subscribeNewSnapshot((snapshot) => {
-            if (snapshot.tipBlock) {
+        ChainService.subscribeNewBlock((newBlock) => {
+            if (newBlock.blockHeader) {
                 setTipBlock((prev) => {
                     if (
                         prev == null ||
                         prev?.blockHeader?.block_number <
-                            snapshot.tipBlock.blockHeader.block_number
+                            newBlock.blockHeader.block_number
                     ) {
-                        return snapshot.tipBlock || undefined;
+                        return newBlock || undefined;
                     } else {
                         return prev;
                     }
@@ -60,14 +60,14 @@ export default function Elevator() {
                 <div className={"px-20"}>
                     <ElevatorCar
                         blockHeader={tipBlock?.blockHeader}
-                        transactions={tipBlock?.tipCommittedTransactions}
+                        transactions={tipBlock?.committedTransactions}
                         setFromDoorClosing={setDoorClosing}
                     />
                 </div>
             </div>
 
             <ElevatorPanel
-                transactionNumber={tipBlock?.tipCommittedTransactions.length}
+                transactionNumber={tipBlock?.committedTransactions.length}
                 sizeBytes={20}
                 occupationPercentage={20}
             />
