@@ -5,6 +5,7 @@ import {
     isCellBaseTx,
     isDAOTx,
     isDobTx,
+    isRGBPPTx,
     isTransferCKBTx,
     isUDTTx,
 } from "../util/chain";
@@ -35,7 +36,7 @@ export interface DBTransaction {
     fee?: Hex; // TEXT, optional
     version?: Hex; // TEXT, optional
     witnesses: string; // TEXT NOT NULL
-    type?: string; // TEXT, optional
+    type?: number; // TEXT, optional
     status: TransactionStatus; // INTEGER NOT NULL (0: pending, 1: proposing, 2: proposed, 3: committed, 4: rejected)
     enter_pool_at?: number; // DATETIME, optional
     proposing_at?: number; // DATETIME, optional
@@ -231,6 +232,10 @@ export namespace TransactionType {
 
         if (isDAOTx(tx, network)) {
             return TransactionTypeEnum.dao;
+        }
+
+        if (isRGBPPTx(tx, network)) {
+            return TransactionTypeEnum.rgbpp;
         }
 
         return TransactionTypeEnum.other;

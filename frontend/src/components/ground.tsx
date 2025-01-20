@@ -23,7 +23,7 @@ const Ground: FunctionComponent<GroundProps> = ({}) => {
                 {Object.values(TransactionTypeEnum)
                     .filter((t) => typeof t === "number")
                     .map((type) => {
-                        const bgColor = `${TransactionType.toBgColor(type)}`;
+                        const bgColor = `${TransactionType.toBgTailwindCSS(type)}`;
                         return (
                             <div
                                 class={`flex justify-start items-center align-middle gap-1`}

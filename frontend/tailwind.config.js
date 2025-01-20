@@ -92,6 +92,10 @@ export default {
                         DEFAULT: "#DD8A51",
                         shadow: "#B4500C",
                     },
+                    pink: {
+                        DEFAULT: "#E48F9C",
+                        shadow: "#E35A00",
+                    },
                     blue: {
                         DEFAULT: "#8FC0CF",
                         shadow: "#66A8BC",
@@ -101,7 +105,7 @@ export default {
                         shadow: "#88BEA6",
                     },
                     beige: {
-                        DEFAULT: "#B18FCF",
+                        DEFAULT: "#B1AA8E",
                         shadow: "#8D8B71",
                     },
                     rgb: {
@@ -112,6 +116,18 @@ export default {
                     tape: {
                         DEFAULT: "#EFEFEF",
                         shadow: "#E7E7E7",
+                    },
+                    high: {
+                        DEFAULT: "#AAFAC8",
+                        shadow: "#FF5846",
+                    },
+                    medium: {
+                        DEFAULT: "#DD8A51",
+                        shadow: "#66A8BC",
+                    },
+                    low: {
+                        DEFAULT: "#E48F9C",
+                        shadow: "#B18FCF",
                     },
                 },
                 other: {
