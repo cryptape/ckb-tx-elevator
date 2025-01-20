@@ -36,8 +36,11 @@ RUN pnpm install --prod
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Expose port 3000 (from Config.apiHttpPort)
+# Expose port 3000
 EXPOSE 3000
+
+# Expose ws port 3001
+EXPOSE 3001
 
 # Set environment variables
 ENV NODE_ENV=production
