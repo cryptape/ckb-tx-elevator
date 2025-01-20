@@ -6,6 +6,7 @@ import { type SubBlock, type SubMessage, SubMessageType } from "../api/type";
 import type { DB } from "../db";
 import { type TransactionSnapshot, TransactionStatus } from "../db/type";
 import { logger } from "../util/logger";
+import type { Network } from "./type";
 
 export class BaseEmitter {
     protected isRunning: boolean;
@@ -75,15 +76,18 @@ export class BaseEmitter {
 }
 
 export class SnapshotEmitter extends BaseEmitter {
+    network: Network;
     private db: DB;
     private currentTip: Hex;
     private currentSnapshot: TransactionSnapshot | undefined;
 
     constructor({
         db,
+        network,
         livenessCheckIntervalSeconds = 5,
-    }: { db: DB; livenessCheckIntervalSeconds?: number }) {
+    }: { network: Network; db: DB; livenessCheckIntervalSeconds?: number }) {
         super({ livenessCheckIntervalSeconds });
+        this.network = network;
         this.db = db;
         this.currentTip = "0x0";
     }
@@ -121,6 +125,7 @@ export class SnapshotEmitter extends BaseEmitter {
                 const snapshot = await this.db.getChainSnapshot();
                 if (snapshot) {
                     const msg = {
+                        network: this.network,
                         type: SubMessageType.NewSnapshot,
                         content: snapshot,
                     };
@@ -139,6 +144,8 @@ export class SnapshotEmitter extends BaseEmitter {
     // Listen for main worker notify message
     startWorker() {
         process.on("message", (msg: SubMessage) => {
+            if (msg.network !== this.network) return;
+
             const type = msg.type;
             const content = msg.content;
             if (type === SubMessageType.NewSnapshot) {
@@ -161,13 +168,16 @@ export class SnapshotEmitter extends BaseEmitter {
 }
 
 export class BlockEmitter extends BaseEmitter {
+    network: Network;
     private db: DB;
     private currentTip: Hex;
     constructor({
         db,
+        network,
         livenessCheckIntervalSeconds = 5,
-    }: { db: DB; livenessCheckIntervalSeconds?: number }) {
+    }: { network: Network; db: DB; livenessCheckIntervalSeconds?: number }) {
         super({ livenessCheckIntervalSeconds });
+        this.network = network;
         this.db = db;
         this.currentTip = "0x0";
     }
@@ -208,6 +218,7 @@ export class BlockEmitter extends BaseEmitter {
                 };
 
                 const msg = {
+                    network: this.network,
                     type: SubMessageType.NewBlock,
                     content: data,
                 };
@@ -225,6 +236,8 @@ export class BlockEmitter extends BaseEmitter {
     // Listen for main worker notify message
     startWorker() {
         process.on("message", (msg: SubMessage) => {
+            if (msg.network !== this.network) return;
+
             const type = msg.type;
             const content = msg.content;
             if (type === SubMessageType.NewBlock) {

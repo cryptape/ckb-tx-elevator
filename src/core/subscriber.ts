@@ -1,15 +1,12 @@
 import {
     type JsonRpcBlock,
-    JsonRpcTransaction,
     JsonRpcTransformers,
 } from "@ckb-ccc/core/advancedBarrel";
 import { WebSocket } from "ws";
 import type { DB } from "../db";
-import { TransactionType } from "../db/type";
 import { logger } from "../util/logger";
 import type {
     JsonRpcPoolTransactionEntry,
-    Network,
     PoolTransactionReject,
 } from "./type";
 

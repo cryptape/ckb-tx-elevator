@@ -1,6 +1,7 @@
 import type { Server } from "node:http";
 import { type WebSocket, WebSocketServer } from "ws";
 import { BlockEmitter, SnapshotEmitter } from "../core/emitter";
+import type { Network } from "../core/type";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
 import {
@@ -9,13 +10,13 @@ import {
     SubMessageType,
 } from "./type";
 
-export function createWsServer(httpServer: Server, db: DB) {
+export function createWsServer(httpServer: Server, network: Network, db: DB) {
     const wss = new WebSocketServer({ server: httpServer });
 
-    const snapshotEmitter = new SnapshotEmitter({ db });
+    const snapshotEmitter = new SnapshotEmitter({ network, db });
     snapshotEmitter.startWorker();
 
-    const blockEmitter = new BlockEmitter({ db });
+    const blockEmitter = new BlockEmitter({ network, db });
     blockEmitter.startWorker();
 
     return {

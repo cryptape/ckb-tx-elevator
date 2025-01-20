@@ -14,7 +14,7 @@ export interface WebSocketServiceOptions {
     logLevel?: "info" | "warn" | "error" | "none";
 }
 
-const API_WS_URL = Config.apiWsUrl; // adjust this to your server URL
+const API_WS_URL = Config.testnetApiWsUrl; // adjust this to your server URL
 
 export class WsApiService {
     private socket: WebSocket | null = null;

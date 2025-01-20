@@ -4,87 +4,100 @@ import { WsApiService } from "./ws";
 import {
     BlockHeader,
     ChainSnapshot,
+    Network,
     TipBlockResponse,
     Transaction,
 } from "./type";
+import { Config } from "./config";
 
 export class ChainService {
-    static wsClient: WsApiService = new WsApiService({});
+    wsClient: WsApiService;
+    httpClient: HttpApiService;
 
-    static async getPendingTransactions(): Promise<Transaction[]> {
+    constructor(network: Network) {
+        this.wsClient = new WsApiService({
+            url:
+                network === Network.Mainnet
+                    ? Config.mainnetApiWsUrl
+                    : Config.testnetApiWsUrl,
+        });
+        this.httpClient = new HttpApiService(
+            network === Network.Mainnet
+                ? Config.mainnetApiHttpUrl
+                : Config.testnetApiHttpUrl,
+        );
+    }
+
+    async getPendingTransactions(): Promise<Transaction[]> {
         const response =
-            await HttpApiService.get<Transaction[]>("/pending-txs");
+            await this.httpClient.get<Transaction[]>("/pending-txs");
         return response.data || [];
     }
 
-    static async getProposingTransactions(): Promise<Transaction[]> {
+    async getProposingTransactions(): Promise<Transaction[]> {
         const response =
-            await HttpApiService.get<Transaction[]>("/proposing-txs");
+            await this.httpClient.get<Transaction[]>("/proposing-txs");
         return response.data || [];
     }
 
-    static async getRejectedTransactions(): Promise<Transaction[]> {
+    async getRejectedTransactions(): Promise<Transaction[]> {
         const response =
-            await HttpApiService.get<Transaction[]>("/rejected-txs");
+            await this.httpClient.get<Transaction[]>("/rejected-txs");
         return response.data || [];
     }
 
-    static async getProposedTransactions(): Promise<Transaction[]> {
+    async getProposedTransactions(): Promise<Transaction[]> {
         const response =
-            await HttpApiService.get<Transaction[]>("/proposed-txs");
+            await this.httpClient.get<Transaction[]>("/proposed-txs");
         return response.data || [];
     }
 
-    static async getProposedTransactionsByBlock(
+    async getProposedTransactionsByBlock(
         blockHash: Hex,
     ): Promise<Transaction[]> {
-        const response = await HttpApiService.get<Transaction[]>(
+        const response = await this.httpClient.get<Transaction[]>(
             `/proposed-txs-by-block?blockHash=${blockHash}`,
         );
         return response.data || [];
     }
 
-    static async getCommittedTransactions(
-        blockHash: Hex,
-    ): Promise<Transaction[]> {
-        const response = await HttpApiService.get<Transaction[]>(
+    async getCommittedTransactions(blockHash: Hex): Promise<Transaction[]> {
+        const response = await this.httpClient.get<Transaction[]>(
             `/committed-txs?blockHash=${blockHash}`,
         );
         return response.data || [];
     }
 
-    static async getBlockHeader(blockHash: Hex): Promise<BlockHeader | null> {
-        const response = await HttpApiService.get<BlockHeader>(
+    async getBlockHeader(blockHash: Hex): Promise<BlockHeader | null> {
+        const response = await this.httpClient.get<BlockHeader>(
             `/block-header?blockHash=${blockHash}`,
         );
         return response.data || null;
     }
-    5;
-    static async getTipBlockHeader(): Promise<BlockHeader | null> {
+
+    async getTipBlockHeader(): Promise<BlockHeader | null> {
         const response =
-            await HttpApiService.get<BlockHeader>("/tip-block-header");
+            await this.httpClient.get<BlockHeader>("/tip-block-header");
         return response.data || null;
     }
 
-    static async getTipBlockTransactions(): Promise<TipBlockResponse | null> {
+    async getTipBlockTransactions(): Promise<TipBlockResponse | null> {
         const response =
-            await HttpApiService.get<TipBlockResponse>("/tip-block-txs");
+            await this.httpClient.get<TipBlockResponse>("/tip-block-txs");
         return response.data || null;
     }
 
-    static async getAllBlockHeaders(
+    async getAllBlockHeaders(
         order: "ASC" | "DESC" = "DESC",
         limit: number = 20,
     ): Promise<BlockHeader[]> {
-        const response = await HttpApiService.get<BlockHeader[]>(
+        const response = await this.httpClient.get<BlockHeader[]>(
             `/all-block-headers?order=${order}&limit=${limit}`,
         );
         return response.data || [];
     }
 
-    static async subscribeNewSnapshot(
-        onmessage: (_data: ChainSnapshot) => void,
-    ) {
+    async subscribeNewSnapshot(onmessage: (_data: ChainSnapshot) => void) {
         this.wsClient.send("newSnapshot", {});
 
         this.wsClient.on("newSnapshot", (message: any) => {
@@ -93,9 +106,7 @@ export class ChainService {
         });
     }
 
-    static async subscribeNewBlock(
-        onmessage: (_data: TipBlockResponse) => void,
-    ) {
+    async subscribeNewBlock(onmessage: (_data: TipBlockResponse) => void) {
         this.wsClient.send("newBlock", {});
 
         this.wsClient.on("newBlock", (message: any) => {

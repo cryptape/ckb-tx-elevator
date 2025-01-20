@@ -6,7 +6,7 @@ import ElevatorPanel from "./panel";
 import ElevatorHeader from "./header";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
-import { TipBlockResponse } from "../../service/type";
+import { Network, TipBlockResponse } from "../../service/type";
 
 export default function Elevator() {
     const chainTheme = useAtomValue(chainThemeAtom);
@@ -14,28 +14,34 @@ export default function Elevator() {
     const [doorClosing, setDoorClosing] = useState(false);
 
     // subscribe to new block
+    // todo: need unscribe when component unmount
     const subNewBlock = async () => {
-        ChainService.subscribeNewBlock((newBlock) => {
-            if (newBlock.blockHeader) {
-                setTipBlock((prev) => {
-                    if (
-                        prev == null ||
-                        prev?.blockHeader?.block_number <
-                            newBlock.blockHeader.block_number
-                    ) {
-                        return newBlock || undefined;
-                    } else {
-                        return prev;
-                    }
-                });
-            }
+        const network =
+            chainTheme === ChainTheme.mainnet
+                ? Network.Mainnet
+                : Network.Testnet;
+        const chainService = new ChainService(network);
+        chainService.wsClient.connect(() => {
+            chainService.subscribeNewBlock((newBlock) => {
+                if (newBlock.blockHeader) {
+                    setTipBlock((prev) => {
+                        if (
+                            prev == null ||
+                            prev?.blockHeader?.block_number <
+                                newBlock.blockHeader.block_number
+                        ) {
+                            return newBlock || undefined;
+                        } else {
+                            return prev;
+                        }
+                    });
+                }
+            });
         });
     };
     useEffect(() => {
-        ChainService.wsClient.connect(() => {
-            subNewBlock();
-        });
-    }, []);
+        subNewBlock();
+    }, [chainTheme]);
 
     const bgElevatorFrame =
         chainTheme === ChainTheme.mainnet

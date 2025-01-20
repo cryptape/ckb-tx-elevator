@@ -1,10 +1,11 @@
 import cluster from "node:cluster";
 import os from "node:os";
 import process from "node:process";
-import { testnetDB } from "./core";
+import { mainnetDB, mainnetSubscriber, testnetDB } from "./core";
 import { testnetSubscriber } from "./core";
 import { Config } from "./core/config";
 import { BlockEmitter, SnapshotEmitter } from "./core/emitter";
+import { Network } from "./core/type";
 import { runServer } from "./server";
 import { logger } from "./util/logger";
 
@@ -17,13 +18,30 @@ if (cluster.isPrimary) {
     }
 
     logger.info(`Config: ${JSON.stringify(Config, null, 2)}`);
+
     testnetSubscriber.run();
-
-    const snapshotEmitter = new SnapshotEmitter({ db: testnetDB });
+    const snapshotEmitter = new SnapshotEmitter({
+        network: Network.Testnet,
+        db: testnetDB,
+    });
     snapshotEmitter.startForever();
-
-    const blockEmitter = new BlockEmitter({ db: testnetDB });
+    const blockEmitter = new BlockEmitter({
+        network: Network.Testnet,
+        db: testnetDB,
+    });
     blockEmitter.startForever();
+
+    mainnetSubscriber.run();
+    const mainnetSnapshotEmitter = new SnapshotEmitter({
+        network: Network.Mainnet,
+        db: mainnetDB,
+    });
+    mainnetSnapshotEmitter.startForever();
+    const mainnetBlockEmitter = new BlockEmitter({
+        network: Network.Mainnet,
+        db: mainnetDB,
+    });
+    mainnetBlockEmitter.startForever();
 
     cluster.on("exit", (worker, _code, _signal) => {
         if (worker.process.exitCode === 0) {

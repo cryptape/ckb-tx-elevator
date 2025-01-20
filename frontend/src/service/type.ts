@@ -1,5 +1,10 @@
 import { Hex } from "@ckb-ccc/core";
 
+export enum Network {
+    Mainnet = "mainnet",
+    Testnet = "testnet",
+}
+
 export enum TransactionStatus {
     Pending = 0,
     Proposing = 1,

@@ -2,7 +2,9 @@ import { FunctionalComponent } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { ChainService } from "../../service/api";
 import QueueComponent from "./queue";
-import { Transaction } from "../../service/type";
+import { Network, Transaction } from "../../service/type";
+import { useAtomValue } from "jotai";
+import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 
 type TxStatus = "pending" | "proposing" | "proposed" | "committed" | "none";
 
@@ -13,6 +15,8 @@ interface TxChange {
 }
 
 const Pool: FunctionalComponent = () => {
+    const chainTheme = useAtomValue(chainThemeAtom);
+
     const [initProposedTxs, setInitProposedTxs] = useState<
         Transaction[] | null
     >(null);
@@ -41,62 +45,68 @@ const Pool: FunctionalComponent = () => {
     const [stateChanges, setStateChanges] = useState<TxChange[]>([]); // 存储状态变化信息
 
     const subNewSnapshot = async () => {
-        ChainService.subscribeNewSnapshot((newSnapshot) => {
-            const {
-                tipCommittedTransactions,
-                pendingTransactions,
-                proposingTransactions,
-                proposedTransactions,
-            } = newSnapshot;
+        const network =
+            chainTheme === ChainTheme.mainnet
+                ? Network.Mainnet
+                : Network.Testnet;
+        const chainService = new ChainService(network);
+        chainService.wsClient.connect(() => {
+            chainService.subscribeNewSnapshot((newSnapshot) => {
+                const {
+                    tipCommittedTransactions,
+                    pendingTransactions,
+                    proposingTransactions,
+                    proposedTransactions,
+                } = newSnapshot;
 
-            if (initCommittedTxs == null) {
-                setInitCommittedTxs(tipCommittedTransactions);
-            }
-            if (initProposedTxs == null) {
-                setInitProposedTxs(proposedTransactions);
-            }
-            if (initPendingTxs == null) {
-                setInitPendingTxs(pendingTransactions);
-            }
-            if (initProposingTxs == null) {
-                setInitProposingTxs(proposingTransactions);
-            }
+                if (initCommittedTxs == null) {
+                    setInitCommittedTxs(tipCommittedTransactions);
+                }
+                if (initProposedTxs == null) {
+                    setInitProposedTxs(proposedTransactions);
+                }
+                if (initPendingTxs == null) {
+                    setInitPendingTxs(pendingTransactions);
+                }
+                if (initProposingTxs == null) {
+                    setInitProposingTxs(proposingTransactions);
+                }
 
-            // 拿到所有tx
-            const newTxs = {
-                pending: pendingTransactions,
-                proposing: proposingTransactions,
-                proposed: proposedTransactions,
-                committed: tipCommittedTransactions,
-            };
+                // 拿到所有tx
+                const newTxs = {
+                    pending: pendingTransactions,
+                    proposing: proposingTransactions,
+                    proposed: proposedTransactions,
+                    committed: tipCommittedTransactions,
+                };
 
-            // diff 数据
-            if (previousTxs) {
-                const changes = detectStateChanges(previousTxs, newTxs);
-                setStateChanges(changes);
-            }
-
-            // 更新历史记录
-            // 使用函数式更新
-            setPreviousTxs((prev) => {
-                if (prev) {
-                    const changes = detectStateChanges(prev, newTxs);
+                // diff 数据
+                if (previousTxs) {
+                    const changes = detectStateChanges(previousTxs, newTxs);
                     setStateChanges(changes);
                 }
-                return newTxs;
-            });
 
-            setPendingTxs(pendingTransactions);
-            setProposingTxs(proposingTransactions);
-            setProposedTxs(proposedTransactions);
-            setCommittedTxs(tipCommittedTransactions);
+                // 更新历史记录
+                // 使用函数式更新
+                setPreviousTxs((prev) => {
+                    if (prev) {
+                        const changes = detectStateChanges(prev, newTxs);
+                        setStateChanges(changes);
+                    }
+                    return newTxs;
+                });
+
+                setPendingTxs(pendingTransactions);
+                setProposingTxs(proposingTransactions);
+                setProposedTxs(proposedTransactions);
+                setCommittedTxs(tipCommittedTransactions);
+            });
         });
     };
 
     useEffect(() => {
-        ChainService.wsClient.connect();
         subNewSnapshot();
-    }, []);
+    }, [chainTheme]);
 
     // 状态变化检测
     const detectStateChanges = (

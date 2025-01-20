@@ -1,3 +1,4 @@
+import type { Network } from "../core/type";
 import type { ChainSnapshot, DBBlockHeader, DBTransaction } from "../db/type";
 
 export enum SubMessageType {
@@ -8,6 +9,7 @@ export enum SubMessageType {
 export type SubMessageContent = ChainSnapshot | SubBlock | string;
 
 export interface SubMessage {
+    network: Network;
     type: SubMessageType;
     content: SubMessageContent;
 }

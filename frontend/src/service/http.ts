@@ -1,7 +1,6 @@
 import fetch from "cross-fetch";
 import { Config } from "./config";
-
-const API_BASE_URL = Config.apiHttpUrl; // adjust this to your server URL
+import { Network } from "./type";
 
 interface HttpApiResponse<T> {
     data?: T;
@@ -9,12 +8,17 @@ interface HttpApiResponse<T> {
 }
 
 export class HttpApiService {
-    private static async request<T>(
+    baseUrl: string;
+    constructor(url: string) {
+        this.baseUrl = url;
+    }
+
+    private async request<T>(
         endpoint: string,
         options?: RequestInit,
     ): Promise<HttpApiResponse<T>> {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const response = await fetch(`${this.baseUrl}${endpoint}`, {
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -34,31 +38,25 @@ export class HttpApiService {
         }
     }
 
-    static async get<T>(endpoint: string): Promise<HttpApiResponse<T>> {
+    async get<T>(endpoint: string): Promise<HttpApiResponse<T>> {
         return this.request<T>(endpoint, { method: "GET" });
     }
 
-    static async post<T>(
-        endpoint: string,
-        body: any,
-    ): Promise<HttpApiResponse<T>> {
+    async post<T>(endpoint: string, body: any): Promise<HttpApiResponse<T>> {
         return this.request<T>(endpoint, {
             method: "POST",
             body: JSON.stringify(body),
         });
     }
 
-    static async put<T>(
-        endpoint: string,
-        body: any,
-    ): Promise<HttpApiResponse<T>> {
+    async put<T>(endpoint: string, body: any): Promise<HttpApiResponse<T>> {
         return this.request<T>(endpoint, {
             method: "PUT",
             body: JSON.stringify(body),
         });
     }
 
-    static async delete<T>(endpoint: string): Promise<HttpApiResponse<T>> {
+    async delete<T>(endpoint: string): Promise<HttpApiResponse<T>> {
         return this.request<T>(endpoint, { method: "DELETE" });
     }
 }

@@ -18,8 +18,8 @@ export const Config = {
     testnetHttpRpcUrl:
         process.env.TESTNET_HTTP_RPC_URL ?? "https://testnet.ckb.dev",
 
-    apiHttpPort: Number(process.env.API_HTTP_PORT ?? 3000),
-    apiWsPort: Number(process.env.API_WS_PORT ?? 3001),
+    apiTestnetPort: Number(process.env.API_TESTNET_PORT ?? 3000),
+    apiMainnetPort: Number(process.env.API_MAINNET_PORT ?? 3001),
     allowOrigin: extractAllowOriginList(process.env.ALLOW_ORIGIN ?? "*"),
 };
 
