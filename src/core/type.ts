@@ -1,6 +1,11 @@
 import type { Hex } from "@ckb-ccc/core";
 import type { JsonRpcTransaction } from "@ckb-ccc/core/advancedBarrel";
 
+export enum Network {
+    Mainnet = "mainnet",
+    Testnet = "testnet",
+}
+
 export interface JsonRpcTransactionView extends JsonRpcTransaction {
     hash: Hex;
 }
@@ -32,19 +37,3 @@ export enum PoolTransactionRejectType {
     RBFRejected = "RBFRejected", // RBF rejected
     Invalidated = "Invalidated", // Invalidated rejected
 }
-
-export type DBBlockHeader = {
-    id: number;
-    compact_target: Hex;
-    dao: Hex;
-    epoch: Hex;
-    extra_hash: Hex;
-    block_hash: Hex;
-    nonce: Hex;
-    block_number: Hex;
-    parent_hash: Hex;
-    proposals_hash: Hex;
-    timestamp: number;
-    transactions_root: Hex;
-    version: Hex;
-};

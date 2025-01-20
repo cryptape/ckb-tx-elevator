@@ -1,3 +1,69 @@
+import type { Hex } from "@ckb-ccc/core";
+import type { JsonRpcTransaction } from "@ckb-ccc/core/advancedBarrel";
+import type { Network } from "../core/type";
+import {
+    isCellBaseTx,
+    isDAOTx,
+    isDobTx,
+    isRGBPPTx,
+    isTransferCKBTx,
+    isUDTTx,
+} from "../util/chain";
+
+export type DBId = number | bigint;
+
+export type DBBlockHeader = {
+    id: DBId;
+    compact_target: Hex;
+    dao: Hex;
+    epoch: Hex;
+    extra_hash: Hex;
+    block_hash: Hex;
+    nonce: Hex;
+    block_number: Hex;
+    parent_hash: Hex;
+    proposals_hash: Hex;
+    timestamp: number;
+    transactions_root: Hex;
+    version: Hex;
+};
+
+export interface DBTransaction {
+    id: DBId; // INTEGER PRIMARY KEY AUTOINCREMENT
+    tx_hash: Hex; // TEXT UNIQUE NOT NULL
+    cycles?: Hex; // TEXT, optional
+    size?: Hex; // TEXT, optional
+    fee?: Hex; // TEXT, optional
+    version?: Hex; // TEXT, optional
+    witnesses: string; // TEXT NOT NULL
+    type?: number; // TEXT, optional
+    status: TransactionStatus; // INTEGER NOT NULL (0: pending, 1: proposing, 2: proposed, 3: committed, 4: rejected)
+    enter_pool_at?: number; // DATETIME, optional
+    proposing_at?: number; // DATETIME, optional
+    proposed_at?: number; // DATETIME, optional
+    proposed_at_block_hash?: Hex; // TEXT, optional
+    proposed_at_block_number?: Hex; // TEXT, optional
+    committed_at?: number; // DATETIME, optional
+    committed_at_block_hash?: Hex; // TEXT, optional
+    committed_at_block_number?: Hex; // TEXT, optional
+    rejected_at?: number; // DATETIME, optional
+    rejected_reason?: string; // TEXT, optional
+    timestamp: number; // DATETIME DEFAULT CURRENT_TIMESTAMP, optional
+}
+
+export interface TransactionSnapshot {
+    timestamp: number; // last modify time
+    txHash: string;
+    status: TransactionStatus;
+}
+
+export interface ChainSnapshot {
+    tipCommittedTransactions: DBTransaction[];
+    pendingTransactions: DBTransaction[];
+    proposingTransactions: DBTransaction[];
+    proposedTransactions: DBTransaction[];
+}
+
 export enum TransactionStatus {
     Pending = 0,
     Proposing = 1,
@@ -130,5 +196,48 @@ export namespace HashType {
             default:
                 throw new Error(`Invalid hashType: ${hashType}`);
         }
+    }
+}
+
+export enum TransactionTypeEnum {
+    other = 0,
+    cellbase = 1,
+    ckb = 2,
+    udt = 3,
+    dob = 4,
+    dao = 5,
+    rgbpp = 6,
+}
+
+export namespace TransactionType {
+    export function parseFromTransaction(
+        tx: JsonRpcTransaction,
+        network: Network,
+    ): TransactionTypeEnum {
+        if (isCellBaseTx(tx)) {
+            return TransactionTypeEnum.cellbase;
+        }
+
+        if (isTransferCKBTx(tx)) {
+            return TransactionTypeEnum.ckb;
+        }
+
+        if (isUDTTx(tx, network)) {
+            return TransactionTypeEnum.udt;
+        }
+
+        if (isDobTx(tx, network)) {
+            return TransactionTypeEnum.dob;
+        }
+
+        if (isDAOTx(tx, network)) {
+            return TransactionTypeEnum.dao;
+        }
+
+        if (isRGBPPTx(tx, network)) {
+            return TransactionTypeEnum.rgbpp;
+        }
+
+        return TransactionTypeEnum.other;
     }
 }

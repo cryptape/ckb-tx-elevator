@@ -5,4 +5,4 @@ export enum ChainTheme {
     mainnet = "mainnet",
 }
 
-export const chainThemeAtom = atom(ChainTheme.testnet);
+export const chainThemeAtom = atom(ChainTheme.mainnet);

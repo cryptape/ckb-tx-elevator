@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # get full history to create short-commit-ids 
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
@@ -31,6 +33,15 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            ${{ github.ref == 'refs/heads/master' && 'latest' || '' }}
+            ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.head_ref || github.ref_name, github.sha) }}
+          labels: |
+            org.label-schema.schema-version=1.0
+            org.label-schema.vcs-url=${{ github.server_url }}/${{ github.repository }}
+            org.label-schema.vcs-ref=${{ github.sha }}
+            org.label-schema.build-date=${{ github.event.push.head_commit.timestamp }}
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4

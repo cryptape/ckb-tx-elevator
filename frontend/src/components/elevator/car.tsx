@@ -1,11 +1,15 @@
 import Matter from "matter-js";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { BlockHeader, Transaction } from "../../service/chain";
+import {
+    BlockHeader,
+    Transaction,
+    TransactionType,
+    TransactionTypeEnum,
+} from "../../service/type";
 import {
     boxSizeToMatterSize,
     carBoxCenterPosX,
     carBoxSize,
-    randomFillStyleColor,
     transactionSquareSize,
 } from "./util";
 import { useAtomValue } from "jotai";
@@ -32,6 +36,7 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
         setDoorClosing(false);
         createScene();
     }
+
     function createScene() {
         let Engine = Matter.Engine;
         let Render = Matter.Render;
@@ -56,9 +61,13 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
         // create two boxes and a ground
         const txBoxes = transactions.map((tx, i) => {
             const size = transactionSquareSize(tx.size);
+            const color =
+                tx.type != null
+                    ? TransactionType.toBgColor(+tx.type as TransactionTypeEnum)
+                    : "black";
             const box = Bodies.rectangle(carBoxCenterPosX, 80, size, size, {
                 render: {
-                    fillStyle: randomFillStyleColor(),
+                    fillStyle: color,
                     strokeStyle: "black",
                     lineWidth: 3,
                 },
@@ -137,7 +146,7 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
 
     useEffect(() => {
         run();
-    }, [transactions.length]);
+    }, [blockHeader?.block_number]);
 
     useEffect(() => {
         if (setFromDoorClosing) {

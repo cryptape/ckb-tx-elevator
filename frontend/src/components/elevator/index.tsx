@@ -1,33 +1,47 @@
 import { useEffect, useState } from "preact/hooks";
-import { ChainService } from "../../service/chain";
+import { ChainService } from "../../service/api";
 import ElevatorCar from "./car";
 import ElevatorUpButton from "./up-btn";
 import ElevatorPanel from "./panel";
 import ElevatorHeader from "./header";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import { Network, TipBlockResponse } from "../../service/type";
 
 export default function Elevator() {
     const chainTheme = useAtomValue(chainThemeAtom);
-    const [proposedTxs, setProposedTxs] = useState([]);
-    const [committedTxs, setCommittedTxs] = useState([]);
-    const [blockHeader, setBlockHeader] = useState(undefined);
-    const [currentTipNumber, setCurrentTipNumber] = useState(undefined);
+    const [tipBlock, setTipBlock] = useState<TipBlockResponse>(undefined);
     const [doorClosing, setDoorClosing] = useState(false);
 
-    // Update effect to fetch all data
+    // subscribe to new block
+    // todo: need unscribe when component unmount
+    const subNewBlock = async () => {
+        const network =
+            chainTheme === ChainTheme.mainnet
+                ? Network.Mainnet
+                : Network.Testnet;
+        const chainService = new ChainService(network);
+        chainService.wsClient.connect(() => {
+            chainService.subscribeNewBlock((newBlock) => {
+                if (newBlock.blockHeader) {
+                    setTipBlock((prev) => {
+                        if (
+                            prev == null ||
+                            prev?.blockHeader?.block_number <
+                                newBlock.blockHeader.block_number
+                        ) {
+                            return newBlock || undefined;
+                        } else {
+                            return prev;
+                        }
+                    });
+                }
+            });
+        });
+    };
     useEffect(() => {
-        const fetchData = async () => {
-            const [tipBlockTxs] = await Promise.all([
-                ChainService.getTipBlockTransactions(),
-            ]);
-            setProposedTxs(tipBlockTxs.proposedTransactions);
-            setCommittedTxs(tipBlockTxs.committedTransactions);
-            setBlockHeader(tipBlockTxs.blockHeader);
-        };
-        const task = setInterval(fetchData, 3000);
-        return () => clearInterval(task);
-    }, []);
+        subNewBlock();
+    }, [chainTheme]);
 
     const bgElevatorFrame =
         chainTheme === ChainTheme.mainnet
@@ -49,20 +63,20 @@ export default function Elevator() {
                 className={`${bgElevatorFrame} flex flex-col justify-center w-min mx-auto rounded-lg border-[20px] ${borderBlack}`}
             >
                 <ElevatorHeader
-                    blockNumber={+blockHeader?.block_number}
+                    blockNumber={+tipBlock?.blockHeader.block_number}
                     doorClosing={doorClosing}
                 />
                 <div className={"px-20"}>
                     <ElevatorCar
-                        transactions={committedTxs}
-                        blockHeader={blockHeader}
+                        blockHeader={tipBlock?.blockHeader}
+                        transactions={tipBlock?.committedTransactions}
                         setFromDoorClosing={setDoorClosing}
                     />
                 </div>
             </div>
 
             <ElevatorPanel
-                transactionNumber={committedTxs.length}
+                transactionNumber={tipBlock?.committedTransactions.length}
                 sizeBytes={20}
                 occupationPercentage={20}
             />

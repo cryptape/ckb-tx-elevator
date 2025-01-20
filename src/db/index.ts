@@ -9,20 +9,39 @@ import {
 import sqlite3 from "better-sqlite3";
 import type { Database } from "better-sqlite3";
 import type {
-    DBBlockHeader,
     JsonRpcPoolTransactionEntry,
     JsonRpcTransactionView,
+    Network,
     PoolTransactionReject,
 } from "../core/type";
+import { calcTxSize, isCellBaseTx } from "../util/chain";
+import { logger } from "../util/logger";
 import { getNowTimestamp } from "../util/time";
-import { DepType, HashType, TransactionStatus } from "./type";
+import {
+    type ChainSnapshot,
+    type DBBlockHeader,
+    type DBId,
+    type DBTransaction,
+    DepType,
+    HashType,
+    type TransactionSnapshot,
+    TransactionStatus,
+    TransactionType,
+    type TransactionTypeEnum,
+} from "./type";
 
 export class DB {
+    network: Network;
     private db: Database;
 
-    constructor(dbPath: string) {
-        this.db = sqlite3(dbPath);
+    constructor(network: Network, dbPath: string, opt?: sqlite3.Options) {
+        this.network = network;
+        this.db = sqlite3(dbPath, opt);
         this.initTables();
+    }
+
+    private getTxType(tx: JsonRpcTransaction) {
+        return TransactionType.parseFromTransaction(tx, this.network);
     }
 
     private initTables(): void {
@@ -125,12 +144,24 @@ export class DB {
     }
 
     savePendingPoolTransaction(tx: JsonRpcPoolTransactionEntry) {
+        const type = this.getTxType(tx.transaction);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number]
+            [
+                Hex,
+                Hex,
+                Hex,
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+            ]
         >(`
             INSERT INTO transactions (
-                tx_hash, cycles, size, fee, version, witnesses, status, enter_pool_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                tx_hash, cycles, size, fee, type, version, witnesses, status, enter_pool_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         // Start a transaction for atomic operations
@@ -141,6 +172,7 @@ export class DB {
                 tx.cycles,
                 tx.size,
                 tx.fee,
+                type,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
                 TransactionStatus.Pending,
@@ -154,12 +186,24 @@ export class DB {
     }
 
     saveProposingPoolTransaction(tx: JsonRpcPoolTransactionEntry) {
+        const type = this.getTxType(tx.transaction);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number]
+            [
+                Hex,
+                Hex,
+                Hex,
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+            ]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, cycles, size, fee, version, witnesses, status, proposed_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, cycles, size, fee, type, version, witnesses, status, proposed_at
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
         // Start a transaction for atomic operations
@@ -170,6 +214,7 @@ export class DB {
                 tx.cycles,
                 tx.size,
                 tx.fee,
+                type,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
                 TransactionStatus.Proposing,
@@ -186,12 +231,25 @@ export class DB {
         tx: JsonRpcPoolTransactionEntry,
         reason: string,
     ) {
+        const type = this.getTxType(tx.transaction);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number, string]
+            [
+                Hex,
+                Hex,
+                Hex,
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+                string,
+            ]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, cycles, size, fee, version, witnesses, status, rejected_at, rejected_reason
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, cycles, size, fee, type, version, witnesses, status, rejected_at, rejected_reason
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`);
 
         // Start a transaction for atomic operations
@@ -202,6 +260,7 @@ export class DB {
                 tx.cycles,
                 tx.size,
                 tx.fee,
+                type,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
                 TransactionStatus.Rejected,
@@ -220,12 +279,23 @@ export class DB {
         blockNumber: Hex,
         blockHash: Hex,
     ) {
+        const type = this.getTxType(tx);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+            [
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+                Hex,
+                Hex,
+            ]
         >(`	
 	INSERT INTO transactions (
-	    tx_hash, version, witnesses, status, proposed_at, proposed_at_block_number, proposed_at_block_hash
-	) VALUES (?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, type, version, witnesses, status, proposed_at, proposed_at_block_number, proposed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	     `);
 
         const txView: JsonRpcTransactionView = {
@@ -238,6 +308,7 @@ export class DB {
             // Insert main transaction
             const result = txStmt.run(
                 txView.hash,
+                type,
                 txView.version,
                 JSON.stringify(txView.witnesses),
                 TransactionStatus.Proposed,
@@ -257,12 +328,24 @@ export class DB {
         blockNumber: Hex,
         blockHash: Hex,
     ) {
+        const type = this.getTxType(tx);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+            [
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+                Hex,
+                Hex,
+            ]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, version, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
-	) VALUES (?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, type, version, size, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	     `);
 
         const txView: JsonRpcTransactionView = {
@@ -270,12 +353,33 @@ export class DB {
             ...tx,
         };
 
+        const txSize: Hex = `0x${calcTxSize(tx).toString(16)}`;
+
+        if (isCellBaseTx(tx)) {
+            // CellBase tx is a special case that we don't save the relatedData like inputs and outputs
+            logger.debug(`Saving CellBase tx: ${txView.hash}`);
+            return txStmt.run(
+                txView.hash,
+                type,
+                txView.version,
+                txSize,
+                JSON.stringify(txView.witnesses),
+                TransactionStatus.Committed,
+                getNowTimestamp(),
+                blockNumber,
+                blockHash,
+            );
+        }
+
+        // Save normal transaction
         // Start a transaction for atomic operations
         this.db.transaction(() => {
             // Insert main transaction
             const result = txStmt.run(
                 txView.hash,
+                type,
                 txView.version,
+                txSize,
                 JSON.stringify(txView.witnesses),
                 TransactionStatus.Committed,
                 getNowTimestamp(),
@@ -327,17 +431,19 @@ export class DB {
 
         if (txId) {
             const stmt = this.db.prepare<
-                [TransactionStatus, Hex, Hex, number, Hex]
+                [TransactionStatus, Hex, Hex, number, number, Hex]
             >(`
-	    UPDATE transactions
-	    SET status = ?, proposed_at_block_number = ?, proposed_at_block_hash = ?, proposed_at = ?
-	    WHERE tx_hash LIKE ? || '%'
-	`);
+	            UPDATE transactions
+	            SET status = ?, proposed_at_block_number = ?, proposed_at_block_hash = ?, proposed_at = ?, timestamp = ?
+	            WHERE tx_hash LIKE ? || '%'
+	            `);
+
             return stmt.run(
                 TransactionStatus.Proposed,
                 blockNumber,
                 blockHash,
                 blockTimestamp,
+                getNowTimestamp(),
                 txPid,
             );
         }
@@ -355,13 +461,16 @@ export class DB {
         );
         const txId = getStmt.get(tx.transaction.hash)?.id;
         if (txId) {
-            const stmt = this.db.prepare<[TransactionStatus, number, DBId]>(`
+            const stmt = this.db.prepare<
+                [TransactionStatus, number, number, DBId]
+            >(`
 			UPDATE transactions 	
-			SET status = ?, proposing_at = ?
+			SET status = ?, proposing_at = ?, timestamp = ?
 			WHERE id = ?
 			`);
             return stmt.run(
                 TransactionStatus.Proposing,
+                getNowTimestamp(),
                 getNowTimestamp(),
                 txId,
             );
@@ -381,16 +490,17 @@ export class DB {
         const txId = getStmt.get(tx.transaction.hash)?.id;
         if (txId) {
             const stmt = this.db.prepare<
-                [TransactionStatus, number, string, DBId]
+                [TransactionStatus, number, string, number, DBId]
             >(`
-		UPDATE transactions
-		SET status = ?, rejected_at = ?, rejected_reason = ?
-		WHERE id = ?
-	    `);
+		        UPDATE transactions
+		        SET status = ?, rejected_at = ?, rejected_reason = ?, timestamp = ?
+		        WHERE id = ?
+	         `);
             return stmt.run(
                 TransactionStatus.Rejected,
                 getNowTimestamp(),
                 reason,
+                getNowTimestamp(),
                 txId,
             );
         }
@@ -410,19 +520,20 @@ export class DB {
             "SELECT id From transactions WHERE tx_hash = ?",
         );
         const txId = getStmt.get(txHash)?.id;
-        if (txId) {
+        if (txId != null) {
             const stmt = this.db.prepare<
-                [TransactionStatus, Hex, Hex, number, Hex]
+                [TransactionStatus, Hex, Hex, number, number, Hex]
             >(`
-	    UPDATE transactions
-	    SET status = ?, committed_at_block_number = ?, committed_at_block_hash = ?, committed_at = ?
-	    WHERE tx_hash = ? 
-	`);
+	            UPDATE transactions
+	            SET status = ?, committed_at_block_number = ?, committed_at_block_hash = ?, committed_at = ?, timestamp = ?
+	            WHERE tx_hash = ? 
+	        `);
             return stmt.run(
                 TransactionStatus.Committed,
                 blockNumber,
                 blockHash,
                 blockTimestamp,
+                getNowTimestamp(),
                 txHash,
             );
         }
@@ -431,86 +542,133 @@ export class DB {
     }
 
     listAllTransactions() {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions
+	    `);
 
         return stmt.all();
     }
 
     getPendingTransactions() {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Pending}'
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions WHERE status = '${TransactionStatus.Pending}'
+	    `);
         return stmt.all();
     }
 
     getProposingTransactions() {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposing}'
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposing}'
+	    `);
         return stmt.all();
     }
 
     getRejectedTransactions() {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Rejected}'
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions WHERE status = '${TransactionStatus.Rejected}'
+	    `);
         return stmt.all();
     }
 
     getProposedTransactions() {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposed}'	
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposed}'	
+	    `);
         return stmt.all();
     }
 
     getProposedTransactionsByBlock(blockHash: Hex) {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposed}' AND proposed_at_block_hash = '${blockHash}'	
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions WHERE status = '${TransactionStatus.Proposed}' AND proposed_at_block_hash = '${blockHash}'	
+	    `);
         return stmt.all();
     }
 
     getCommittedTransactionsByBlock(blockHash: Hex) {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE status = '${TransactionStatus.Committed}' AND committed_at_block_hash = '${blockHash}'
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+            SELECT * FROM transactions WHERE status = '${TransactionStatus.Committed}' AND committed_at_block_hash = '${blockHash}'
+    	`);
         return stmt.all();
     }
 
     getTransactionByHash(txHash: Hex) {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM transactions WHERE tx_hash = '${txHash}'
-	`);
+        const stmt = this.db.prepare<[], DBTransaction>(`
+	        SELECT * FROM transactions WHERE tx_hash = '${txHash}'
+	    `);
         return stmt.get();
     }
 
     getBlockHeaderByHash(blockHash: Hex) {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM block_header WHERE block_hash = '${blockHash}'
-	`);
+        const stmt = this.db.prepare<[], DBBlockHeader>(`
+	        SELECT * FROM block_header WHERE block_hash = '${blockHash}'
+	    `);
         return stmt.get();
     }
 
     getBlockHeaders(order: "ASC" | "DESC", limit: number) {
-        const stmt = this.db.prepare(`
-	    SELECT * FROM block_header ORDER BY block_number ${order} LIMIT ${limit}	
-	`);
+        const stmt = this.db.prepare<[], DBBlockHeader>(`
+	        SELECT * FROM block_header ORDER BY block_number ${order} LIMIT ${limit}	
+	    `);
         return stmt.all();
     }
 
     getTipBlockHeader() {
         const stmt = this.db.prepare<[], DBBlockHeader>(`
-	    SELECT * FROM block_header ORDER BY block_number DESC LIMIT 1	
-	`);
+	        SELECT * FROM block_header ORDER BY block_number DESC LIMIT 1	
+	    `);
         return stmt.get();
+    }
+
+    getTipBlockNumber() {
+        const stmt = this.db.prepare<[], Pick<DBBlockHeader, "block_number">>(`
+	        SELECT block_number FROM block_header ORDER BY block_number DESC LIMIT 1	
+	    `);
+        return stmt.get()?.block_number;
+    }
+
+    getLastModifiedTransactionSnapshot(excludeStatus?: TransactionStatus) {
+        // tx snapshot means the combination of timestamp and tx_hash
+        // through this combination, it is possible to identify the latest modify transaction
+        if (excludeStatus) {
+            const stmt = this.db.prepare<[], TransactionSnapshot>(`
+                SELECT timestamp, tx_hash, status FROM transactions WHERE status != '${excludeStatus}' ORDER BY timestamp DESC, id DESC LIMIT 1
+            `);
+            return stmt.get();
+        }
+
+        const stmt = this.db.prepare<[], TransactionSnapshot>(`
+            SELECT timestamp, tx_hash, status FROM transactions ORDER BY timestamp DESC, id DESC LIMIT 1
+        `);
+        return stmt.get();
+    }
+
+    async getChainSnapshot(): Promise<ChainSnapshot | null> {
+        const blockHeader = this.getTipBlockHeader();
+        if (!blockHeader) {
+            return null;
+        }
+
+        const [
+            tipCommittedTransactions,
+            pendingTransactions,
+            proposingTransactions,
+            proposedTransactions,
+        ] = await Promise.all([
+            this.getCommittedTransactionsByBlock(blockHeader.block_hash),
+            this.getPendingTransactions(),
+            this.getProposingTransactions(),
+            this.getProposedTransactions(),
+        ]);
+
+        return {
+            tipCommittedTransactions,
+            pendingTransactions,
+            proposingTransactions,
+            proposedTransactions,
+        };
     }
 
     close(): void {
         this.db.close();
     }
 }
-
-export type DBId = number | bigint;

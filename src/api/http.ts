@@ -1,11 +1,15 @@
+import type { Server } from "node:http";
 import type { Hex } from "@ckb-ccc/core";
 import cors from "cors";
-import express, { type Request, type Response } from "express";
+import express, { type Request, type Response, type Express } from "express";
 import { Config } from "../core/config";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
 
-export function createServer(db: DB) {
+export function createHttpServer(db: DB): {
+    app: Express;
+    start: (port: number) => Server;
+} {
     const app = express();
 
     app.use(
@@ -88,13 +92,28 @@ export function createServer(db: DB) {
         res.json(blockHeaders);
     });
 
+    app.get("/tx-by-hash", async (req: Request, res: Response) => {
+        const txHash = req.query.tx_hash;
+        if (
+            typeof txHash !== "string" ||
+            txHash.startsWith("0x") === false ||
+            txHash.length !== 66
+        ) {
+            res.json(`illegal tx_hash: ${txHash}`);
+        } else {
+            const tx = db.getTransactionByHash(txHash as Hex);
+            res.json(tx);
+        }
+    });
+
     app.get("/", (_req: Request, res: Response) => {
-        res.send("Hello, World!");
+        res.send("Welcome to CKB TX Elevator API!");
     });
 
     return {
+        app,
         start: (port: number) => {
-            app.listen(port, () => {
+            return app.listen(port, () => {
                 logger.info(`Server is running on http://localhost:${port}`);
             });
         },
