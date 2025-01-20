@@ -2,6 +2,7 @@ import { Hex } from "@ckb-ccc/core";
 
 export enum TransactionTypeEnum {
     other = 0,
+    cellbase,
     ckb,
     udt,
     dob,
@@ -12,6 +13,8 @@ export enum TransactionTypeEnum {
 export namespace TransactionType {
     export function fromString(s: string): TransactionTypeEnum {
         switch (s) {
+            case "Cellbase":
+                return TransactionTypeEnum.cellbase;
             case "CKB":
                 return TransactionTypeEnum.ckb;
             case "UDT":
@@ -31,6 +34,8 @@ export namespace TransactionType {
 
     export function toString(t: TransactionTypeEnum): string {
         switch (t) {
+            case TransactionTypeEnum.cellbase:
+                return "Cellbase";
             case TransactionTypeEnum.ckb:
                 return "CKB";
             case TransactionTypeEnum.udt:
@@ -48,6 +53,8 @@ export namespace TransactionType {
 
     export function toBgColor(t: TransactionTypeEnum): string {
         switch (t) {
+            case TransactionTypeEnum.cellbase:
+                return "bg-box-gray";
             case TransactionTypeEnum.ckb:
                 return "bg-box-blue";
             case TransactionTypeEnum.udt:

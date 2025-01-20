@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     fee TEXT,
     version TEXT,
     witnesses TEXT NOT NULL,
-    type TEXT, -- tx type, eg: ckb transfer, udt transfer or any other known type
+    type INTEGER, -- tx type, eg: ckb transfer, udt transfer or any other known type
     status INTEGER NOT NULL, -- 0: pending, 1: proposing, 2: proposed, 3: committed, 4: rejected
     enter_pool_at DATETIME, -- the timestamp of the tx first seem in pool
     proposing_at DATETIME, -- the timestamp of the tx first proposed in mempool

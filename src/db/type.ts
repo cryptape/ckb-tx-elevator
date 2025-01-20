@@ -1,4 +1,13 @@
 import type { Hex } from "@ckb-ccc/core";
+import type { JsonRpcTransaction } from "@ckb-ccc/core/advancedBarrel";
+import type { Network } from "../core/type";
+import {
+    isCellBaseTx,
+    isDAOTx,
+    isDobTx,
+    isTransferCKBTx,
+    isUDTTx,
+} from "../util/chain";
 
 export type DBId = number | bigint;
 
@@ -186,5 +195,44 @@ export namespace HashType {
             default:
                 throw new Error(`Invalid hashType: ${hashType}`);
         }
+    }
+}
+
+export enum TransactionTypeEnum {
+    other = 0,
+    cellbase = 1,
+    ckb = 2,
+    udt = 3,
+    dob = 4,
+    dao = 5,
+    rgbpp = 6,
+}
+
+export namespace TransactionType {
+    export function parseFromTransaction(
+        tx: JsonRpcTransaction,
+        network: Network,
+    ): TransactionTypeEnum {
+        if (isCellBaseTx(tx)) {
+            return TransactionTypeEnum.cellbase;
+        }
+
+        if (isTransferCKBTx(tx)) {
+            return TransactionTypeEnum.ckb;
+        }
+
+        if (isUDTTx(tx, network)) {
+            return TransactionTypeEnum.udt;
+        }
+
+        if (isDobTx(tx, network)) {
+            return TransactionTypeEnum.dob;
+        }
+
+        if (isDAOTx(tx, network)) {
+            return TransactionTypeEnum.dao;
+        }
+
+        return TransactionTypeEnum.other;
     }
 }

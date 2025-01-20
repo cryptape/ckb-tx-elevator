@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { type Hex, ccc } from "@ckb-ccc/core";
+import type { Hex } from "@ckb-ccc/core";
 import {
     type JsonRpcBlockHeader,
     type JsonRpcTransaction,
@@ -11,6 +11,7 @@ import type { Database } from "better-sqlite3";
 import type {
     JsonRpcPoolTransactionEntry,
     JsonRpcTransactionView,
+    Network,
     PoolTransactionReject,
 } from "../core/type";
 import { calcTxSize, isCellBaseTx } from "../util/chain";
@@ -25,14 +26,22 @@ import {
     HashType,
     type TransactionSnapshot,
     TransactionStatus,
+    TransactionType,
+    type TransactionTypeEnum,
 } from "./type";
 
 export class DB {
+    network: Network;
     private db: Database;
 
-    constructor(dbPath: string, opt?: sqlite3.Options) {
+    constructor(network: Network, dbPath: string, opt?: sqlite3.Options) {
+        this.network = network;
         this.db = sqlite3(dbPath, opt);
         this.initTables();
+    }
+
+    private getTxType(tx: JsonRpcTransaction) {
+        return TransactionType.parseFromTransaction(tx, this.network);
     }
 
     private initTables(): void {
@@ -135,12 +144,24 @@ export class DB {
     }
 
     savePendingPoolTransaction(tx: JsonRpcPoolTransactionEntry) {
+        const type = this.getTxType(tx.transaction);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number]
+            [
+                Hex,
+                Hex,
+                Hex,
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+            ]
         >(`
             INSERT INTO transactions (
-                tx_hash, cycles, size, fee, version, witnesses, status, enter_pool_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                tx_hash, cycles, size, fee, type, version, witnesses, status, enter_pool_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         // Start a transaction for atomic operations
@@ -151,6 +172,7 @@ export class DB {
                 tx.cycles,
                 tx.size,
                 tx.fee,
+                type,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
                 TransactionStatus.Pending,
@@ -164,12 +186,24 @@ export class DB {
     }
 
     saveProposingPoolTransaction(tx: JsonRpcPoolTransactionEntry) {
+        const type = this.getTxType(tx.transaction);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number]
+            [
+                Hex,
+                Hex,
+                Hex,
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+            ]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, cycles, size, fee, version, witnesses, status, proposed_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, cycles, size, fee, type, version, witnesses, status, proposed_at
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
         // Start a transaction for atomic operations
@@ -180,6 +214,7 @@ export class DB {
                 tx.cycles,
                 tx.size,
                 tx.fee,
+                type,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
                 TransactionStatus.Proposing,
@@ -196,12 +231,25 @@ export class DB {
         tx: JsonRpcPoolTransactionEntry,
         reason: string,
     ) {
+        const type = this.getTxType(tx.transaction);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, Hex, Hex, string, TransactionStatus, number, string]
+            [
+                Hex,
+                Hex,
+                Hex,
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+                string,
+            ]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, cycles, size, fee, version, witnesses, status, rejected_at, rejected_reason
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, cycles, size, fee, type, version, witnesses, status, rejected_at, rejected_reason
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`);
 
         // Start a transaction for atomic operations
@@ -212,6 +260,7 @@ export class DB {
                 tx.cycles,
                 tx.size,
                 tx.fee,
+                type,
                 tx.transaction.version,
                 JSON.stringify(tx.transaction.witnesses),
                 TransactionStatus.Rejected,
@@ -230,12 +279,23 @@ export class DB {
         blockNumber: Hex,
         blockHash: Hex,
     ) {
+        const type = this.getTxType(tx);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+            [
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+                Hex,
+                Hex,
+            ]
         >(`	
 	INSERT INTO transactions (
-	    tx_hash, version, witnesses, status, proposed_at, proposed_at_block_number, proposed_at_block_hash
-	) VALUES (?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, type, version, witnesses, status, proposed_at, proposed_at_block_number, proposed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	     `);
 
         const txView: JsonRpcTransactionView = {
@@ -248,6 +308,7 @@ export class DB {
             // Insert main transaction
             const result = txStmt.run(
                 txView.hash,
+                type,
                 txView.version,
                 JSON.stringify(txView.witnesses),
                 TransactionStatus.Proposed,
@@ -267,12 +328,24 @@ export class DB {
         blockNumber: Hex,
         blockHash: Hex,
     ) {
+        const type = this.getTxType(tx);
+
         const txStmt = this.db.prepare<
-            [Hex, Hex, Hex, string, TransactionStatus, number, Hex, Hex]
+            [
+                Hex,
+                TransactionTypeEnum,
+                Hex,
+                Hex,
+                string,
+                TransactionStatus,
+                number,
+                Hex,
+                Hex,
+            ]
         >(`
 	INSERT INTO transactions (
-	    tx_hash, version, size, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	    tx_hash, type, version, size, witnesses, status, committed_at, committed_at_block_number, committed_at_block_hash
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	     `);
 
         const txView: JsonRpcTransactionView = {
@@ -287,6 +360,7 @@ export class DB {
             logger.debug(`Saving CellBase tx: ${txView.hash}`);
             return txStmt.run(
                 txView.hash,
+                type,
                 txView.version,
                 txSize,
                 JSON.stringify(txView.witnesses),
@@ -303,6 +377,7 @@ export class DB {
             // Insert main transaction
             const result = txStmt.run(
                 txView.hash,
+                type,
                 txView.version,
                 txSize,
                 JSON.stringify(txView.witnesses),

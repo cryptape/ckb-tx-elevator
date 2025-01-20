@@ -1,6 +1,11 @@
 import type { Hex } from "@ckb-ccc/core";
 import type { JsonRpcTransaction } from "@ckb-ccc/core/advancedBarrel";
 
+export enum Network {
+    Mainnet = "mainnet",
+    Testnet = "testnet",
+}
+
 export interface JsonRpcTransactionView extends JsonRpcTransaction {
     hash: Hex;
 }
