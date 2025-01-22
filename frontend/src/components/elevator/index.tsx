@@ -54,13 +54,13 @@ export default function Elevator() {
     return (
         <div
             className={
-                "flex justify-between align-center items-center w-fit mx-auto gap-4"
+                "flex justify-center align-center items-center w-fit mx-auto gap-4"
             }
         >
             <ElevatorUpButton doorClosing={doorClosing} />
 
             <div
-                className={`${bgElevatorFrame} flex flex-col justify-center w-min mx-auto rounded-lg border-[20px] ${borderBlack}`}
+                className={`${bgElevatorFrame} flex flex-col justify-center mx-auto rounded-lg border-[20px] ${borderBlack}`}
             >
                 <ElevatorHeader
                     blockNumber={+tipBlock?.blockHeader.block_number}

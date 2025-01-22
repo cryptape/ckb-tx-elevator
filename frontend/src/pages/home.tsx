@@ -1,36 +1,22 @@
 import { useState } from "preact/hooks";
 import Elevator from "../components/elevator";
 import Ground from "../components/ground";
-import InfoHeader from "../components/info-header";
-import SearchComponent from "../components/search";
+import SpaceBanner from "../components/space-banner";
 import BaseLayout from "../layouts/base";
 import Pool from "../components/pool";
+import Switcher from "../components/switcher";
 
 export function Home() {
     const [showElevator, setShowElevator] = useState(true);
 
-    const toggleView = () => {
-        setShowElevator(!showElevator);
-    };
     return (
         <BaseLayout>
-            <InfoHeader />
-            <SearchComponent />
-            <div className={"w-full"}>
-                <div class="mx-auto flex justify-center">
-                    <a
-                        href="#"
-                        class={"border-[2px] border-solid border-black p-2"}
-                        onClick={toggleView}
-                    >
-                        {showElevator
-                            ? "Switch to Pool"
-                            : "Switch to  Elevator"}
-                    </a>
-                </div>
+            <SpaceBanner />
+            <Switcher
+                onSwitch={(view) => setShowElevator(view === "elevator")}
+            />
 
-                {showElevator ? <Elevator /> : <Pool />}
-            </div>
+            {showElevator ? <Elevator /> : <Pool />}
 
             <Ground />
         </BaseLayout>
