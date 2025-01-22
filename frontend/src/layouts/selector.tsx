@@ -52,7 +52,7 @@ const NetworkSelector = () => {
         <div className="relative inline-block" ref={dropdownRef}>
             <button
                 onClick={toggleDropdown}
-                className={`px-4 py-2 bg-brand-accent rounded-md flex items-center justify-between cursor-pointer focus:outline-none`}
+                className={`h-full px-4 bg-brand-accent flex items-center justify-between cursor-pointer focus:outline-none`}
             >
                 <span>{selected}</span>
                 <svg

@@ -23,7 +23,7 @@ export default function SpaceBanner() {
             : "text-brand-testnet";
     return (
         <div
-            className={`relative h-[200px] bg-gradient-to-br from-gray-600 to-surface-DEFAULT-02 flex flex-col md:flex-row items-center overflow-hidden border-2 ${borderBlack}`}
+            className={`relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-02 to-surface-hover-01 flex flex-col md:flex-row items-center overflow-hidden border-2 ${borderBlack}`}
         >
             {/* 左侧太空场景 */}
             <div className="flex-1 w-full h-full relative">
@@ -55,7 +55,7 @@ export default function SpaceBanner() {
                             <div class={`text-text-secondary`}>Block</div>
                         </div>
                         <div class={"flex justify-start gap-2"}>
-                            <h4>{avgFeeRate} shannons/kB</h4>
+                            <h4>{avgFeeRate} s/kB</h4>
                         </div>
                         <div class={"flex justify-start gap-2"}>
                             <div class={`text-text-secondary`}>Epoch</div>
@@ -74,7 +74,7 @@ export default function SpaceBanner() {
                     <div
                         className="absolute inset-0 rounded-full opacity-70 mix-blend-multiply"
                         style={{
-                            backgroundImage: "url(/src/assets/img/moon.gif)",
+                            backgroundImage: "url(/assets/img/moon.gif)",
                             backgroundSize: "cover",
                         }}
                     />

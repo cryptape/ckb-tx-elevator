@@ -29,13 +29,15 @@ const ElevatorPanel: FunctionComponent<Props> = ({
             <div>
                 <div className="text-text-inverse-secondary">Transaction #</div>
                 <div>
-                    <h3 className={`text-text-inverse`}>{transactionNumber}</h3>
+                    <h3 className={`font-dseg-classic text-text-inverse`}>
+                        {transactionNumber}
+                    </h3>
                 </div>
             </div>
             <div className="mt-4">
                 <div className="text-text-inverse-secondary">Size (Bytes)</div>
                 <div>
-                    <h3 className={`text-text-inverse`}>
+                    <h3 className={`font-dseg-classic text-text-inverse`}>
                         {sizeBytes.toLocaleString()}
                     </h3>
                 </div>
@@ -43,7 +45,7 @@ const ElevatorPanel: FunctionComponent<Props> = ({
             <div className="mt-4">
                 <div className="text-text-inverse-secondary">Occupation</div>
                 <div>
-                    <h3 className={`text-text-inverse`}>
+                    <h3 className={`font-dseg-classic text-text-inverse`}>
                         {occupationPercentage}
                     </h3>
                 </div>

@@ -37,7 +37,7 @@ const ElevatorUpButton: FunctionComponent<ElevatorUpButtonProps> = ({
                         />
                     </svg>
                 </div>
-                <img src="/src/assets/svg/ape.svg" alt="" />
+                <img src="/assets/svg/ape.svg" alt="" />
             </div>
         </div>
     );

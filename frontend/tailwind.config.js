@@ -138,6 +138,8 @@ export default {
                 heading: ['"Open Runde"', "Semibold"],
                 body: ['"Open Runde"', "Medium"],
                 button: ['"Open Runde"', "Medium"],
+                "dseg-classic": ["DSEG7-Classic", "monospace"],
+                "dseg-modern": ["DSEG14-Modern", "monospace"],
             },
             animation: {
                 "arrow-up": "arrowUp 1s linear infinite",

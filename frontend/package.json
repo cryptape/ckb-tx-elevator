@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "cross-fetch": "^4.1.0",
+        "dseg": "^0.46.0",
         "jotai": "^2.11.0",
         "matter-js": "^0.20.0",
         "preact": "^10.25.3",

@@ -27,11 +27,8 @@ const ElevatorHeader: FunctionComponent<ElevatorHeaderProps> = ({
                     "w-min text-nowrap flex justify-center gap-1 text-center p-4 bg-surface-DEFAULT-inverse mx-auto rounded-lg"
                 }
             >
-                <div className={"text-text-inverse"}>Block</div>
-                <div
-                    className={`${textBrandLighter} ${doorClosing ? "animate-number-flip" : ""}`}
-                >
-                    {" "}
+                <div className={"text-text-inverse"}>Latest Block</div>
+                <div className={`font-dseg-classic ${textBrandLighter} `}>
                     {blockNumber}
                 </div>
                 {

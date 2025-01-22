@@ -56,7 +56,7 @@ const Switcher: React.FC<SwitcherProps> = ({ onSwitch }) => {
                         <path d="M16 16V8H8V16H16ZM18 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V4C20 2.9 19.1 2 18 2ZM16 18H8V16H16V18ZM16 6H8V4H16V6Z"></path>
                     </svg>
                 </span>
-                <span>Box View</span>
+                <span>Pool View</span>
             </button>
         </div>
     );
