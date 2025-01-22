@@ -55,13 +55,12 @@ export default function SpaceBanner() {
                             <div class={`text-text-secondary`}>Block</div>
                         </div>
                         <div class={"flex justify-start gap-2"}>
-                            <h4>{avgFeeRate} s/kB</h4>
+                            <h4>{avgFeeRate}</h4>
+                            <div class={`text-text-secondary`}> s/kB</div>
                         </div>
                         <div class={"flex justify-start gap-2"}>
-                            <div class={`text-text-secondary`}>Epoch</div>
-                            <h4>
-                                {epoch} {`(${epochProgress})`}
-                            </h4>
+                            <h4>{epoch}</h4>
+                            <div class={`text-text-secondary`}> epoch</div>
                         </div>
                     </div>
                 </div>

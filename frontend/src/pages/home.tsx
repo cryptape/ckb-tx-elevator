@@ -15,10 +15,39 @@ export function Home() {
             <Switcher
                 onSwitch={(view) => setShowElevator(view === "elevator")}
             />
+            <div class="h-[1000px] relative" style={{ perspective: "1000px" }}>
+                <div
+                    class={`transition-transform duration-1000 ease-out origin-top`}
+                    style={{
+                        transformStyle: "preserve-3d",
+                        transform: !showElevator ? "rotateX(-180deg)" : "",
+                    }}
+                >
+                    {/* Elevator 面 */}
+                    <div
+                        class="absolute w-full h-full"
+                        style={{
+                            backfaceVisibility: "hidden",
+                            transform: "translateZ(1px)",
+                        }}
+                    >
+                        <Elevator />
+                        <Ground />
+                    </div>
 
-            {showElevator ? <Elevator /> : <Pool />}
-
-            <Ground />
+                    {/* Pool 面 */}
+                    <div
+                        class="absolute w-full h-full"
+                        style={{
+                            backfaceVisibility: "hidden",
+                            transform: "rotateX(180deg) translateZ(1px)",
+                        }}
+                    >
+                        <Pool />
+                        <Ground />
+                    </div>
+                </div>
+            </div>
         </BaseLayout>
     );
 }
