@@ -13,19 +13,32 @@ export const Line: FunctionalComponent<LineProps> = ({ title, txs }) => {
     const canvasRef = useRef(null);
 
     const engineRef = useRef(null);
-    const renderRef = useRef(null);
-    const animationRef = useRef(null);
 
     // 用 ref 保存上一次的 txs 数组
     const prevTxsRef = useRef<Transaction[]>([]);
 
-    useEffect(() => {
+    function createScene() {
         const width = 800;
         const height = 100;
 
-        // 初始化引擎和物体
-        engineRef.current = Matter.Engine.create();
-        const { world } = engineRef.current;
+        let Engine = Matter.Engine;
+        let Render = Matter.Render;
+        let Runner = Matter.Runner;
+
+        let engine = Engine.create({});
+        engineRef.current = engine;
+
+        let render = Render.create({
+            element: containerRef.current,
+            engine: engine,
+            canvas: canvasRef.current,
+            options: {
+                background: "transparent",
+                width: width,
+                height: height,
+                wireframes: false,
+            },
+        });
 
         // 添加示例物体
         const wall1 = Matter.Bodies.rectangle(width, 0, 1, height * 2, {
@@ -48,50 +61,20 @@ export const Line: FunctionalComponent<LineProps> = ({ title, txs }) => {
                 strokeStyle: "gray",
             },
         });
-        Matter.Composite.add(world, [ground, wall1, wall2]);
+        Matter.Composite.add(engine.world, [ground, wall1, wall2]);
 
-        // 初始化渲染器
-        if (containerRef.current) {
-            renderRef.current = Matter.Render.create({
-                element: containerRef.current,
-                canvas: canvasRef.current,
-                engine: engineRef.current,
-                options: {
-                    background: "transparent",
-                    width: width,
-                    height: height,
-                    wireframes: false, // 可选：关闭线框模式
-                },
-            });
-            Matter.Render.run(renderRef.current);
-        }
+        // run the renderer
+        Render.run(render);
 
-        // 启动动画循环
-        const tick = () => {
-            Matter.Engine.update(engineRef.current, 1000 / 60); // 60 FPS
-            animationRef.current = requestAnimationFrame(tick);
-        };
-        animationRef.current = requestAnimationFrame(tick);
+        // create runner
+        var runner = Runner.create();
 
-        // 清理函数
-        return () => {
-            // 停止动画循环
-            cancelAnimationFrame(animationRef.current);
+        // run the engine
+        Runner.run(runner, engine);
+    }
 
-            // 停止并销毁渲染器
-            if (renderRef.current) {
-                Matter.Render.stop(renderRef.current);
-                renderRef.current.canvas.remove(); // 确保移除 Canvas 元素
-                renderRef.current = null;
-            }
-
-            // 清理引擎
-            if (engineRef.current) {
-                Matter.Engine.clear(engineRef.current);
-                Matter.Composite.clear(world, false); // 清除所有物体
-                engineRef.current = null;
-            }
-        };
+    useEffect(() => {
+        createScene();
     }, []);
 
     const update = (addTxs: Transaction[], delTxs: Transaction[]) => {
