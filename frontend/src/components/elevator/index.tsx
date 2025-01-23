@@ -1,42 +1,40 @@
 import { useEffect, useState } from "preact/hooks";
-import { ChainService } from "../../service/api";
 import ElevatorCar from "./car";
 import ElevatorMiner from "./miner";
 import ElevatorPanel from "./panel";
 import ElevatorHeader from "./header";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
-import { Network, TipBlockResponse } from "../../service/type";
+import { TipBlockResponse } from "../../service/type";
+import { useChainService } from "../../context/chain";
 
 export default function Elevator() {
     const chainTheme = useAtomValue(chainThemeAtom);
+    const { chainService, waitForConnection } = useChainService();
+
     const [tipBlock, setTipBlock] = useState<TipBlockResponse>(undefined);
     const [doorClosing, setDoorClosing] = useState(false);
 
     // subscribe to new block
     // todo: need unscribe when component unmount
     const subNewBlock = async () => {
-        const network =
-            chainTheme === ChainTheme.mainnet
-                ? Network.Mainnet
-                : Network.Testnet;
-        const chainService = new ChainService(network);
-        chainService.wsClient.connect(() => {
-            chainService.subscribeNewBlock((newBlock) => {
-                if (newBlock.blockHeader) {
-                    setTipBlock((prev) => {
-                        if (
-                            prev == null ||
-                            prev?.blockHeader?.block_number <
-                                newBlock.blockHeader.block_number
-                        ) {
-                            return newBlock || undefined;
-                        } else {
-                            return prev;
-                        }
-                    });
-                }
-            });
+        // 等待连接就绪
+        await waitForConnection();
+
+        chainService.subscribeNewBlock((newBlock) => {
+            if (newBlock.blockHeader) {
+                setTipBlock((prev) => {
+                    if (
+                        prev == null ||
+                        prev?.blockHeader?.block_number <
+                            newBlock.blockHeader.block_number
+                    ) {
+                        return newBlock || undefined;
+                    } else {
+                        return prev;
+                    }
+                });
+            }
         });
     };
     useEffect(() => {
@@ -68,7 +66,7 @@ export default function Elevator() {
                     <div className={"px-20"}>
                         <ElevatorCar
                             blockHeader={tipBlock?.blockHeader}
-                            transactions={tipBlock?.committedTransactions}
+                            transactions={tipBlock?.committedTransactions || []}
                             setFromDoorClosing={setDoorClosing}
                         />
                     </div>

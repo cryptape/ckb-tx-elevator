@@ -96,6 +96,10 @@ export class WsApiService {
         }
     }
 
+    isConnected() {
+        return this.socket && this.socket.readyState === WebSocket.OPEN;
+    }
+
     send<T>(type: string, payload: T) {
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             this.log("warn", "WebSocket is not open, message not sent.");

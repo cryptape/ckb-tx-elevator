@@ -20,6 +20,7 @@ export class ChainService {
                 network === Network.Mainnet
                     ? Config.mainnetApiWsUrl
                     : Config.testnetApiWsUrl,
+            logLevel: "info",
         });
         this.httpClient = new HttpApiService(
             network === Network.Mainnet
@@ -107,8 +108,6 @@ export class ChainService {
     }
 
     async subscribeNewBlock(onmessage: (_data: TipBlockResponse) => void) {
-        this.wsClient.send("newBlock", {});
-
         this.wsClient.on("newBlock", (message: any) => {
             console.log(
                 "received newBlock: ",
@@ -116,5 +115,6 @@ export class ChainService {
             );
             onmessage(message.data);
         });
+        this.wsClient.send("newBlock", {});
     }
 }
