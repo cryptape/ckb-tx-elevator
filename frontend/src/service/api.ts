@@ -13,8 +13,10 @@ import { Config } from "./config";
 export class ChainService {
     wsClient: WsApiService;
     httpClient: HttpApiService;
+    network: Network;
 
     constructor(network: Network) {
+        this.network = network;
         this.wsClient = new WsApiService({
             url:
                 network === Network.Mainnet

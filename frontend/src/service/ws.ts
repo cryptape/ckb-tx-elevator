@@ -14,7 +14,7 @@ export interface WebSocketServiceOptions {
     logLevel?: "info" | "warn" | "error" | "none";
 }
 
-const API_WS_URL = Config.testnetApiWsUrl; // adjust this to your server URL
+const API_WS_URL = Config.testnetApiWsUrl;
 
 export class WsApiService {
     private socket: WebSocket | null = null;
@@ -22,9 +22,16 @@ export class WsApiService {
     private reconnectInterval: number;
     private reconnectAttempts: number;
     private currentReconnectAttempt = 0;
-    private eventListeners = new Map<string, WebSocketMessageHandler<any>[]>();
     private logLevel: "info" | "warn" | "error" | "none";
     private reconnecting = false;
+
+    // 分离消息处理器和事件处理器
+    private messageHandlers = new Map<string, WebSocketMessageHandler<any>[]>();
+    private eventHandlers = {
+        error: [] as ((event: Event) => void)[],
+        close: [] as ((event: CloseEvent) => void)[],
+        open: [] as (() => void)[],
+    };
 
     constructor(options: WebSocketServiceOptions) {
         this.url = options.url ?? API_WS_URL;
@@ -33,11 +40,10 @@ export class WsApiService {
         this.logLevel = options.logLevel || "none";
     }
 
-    connect(onOpen?: () => void) {
+    connect() {
         if (
-            this.socket &&
-            (this.socket.readyState === WebSocket.OPEN ||
-                this.socket.readyState === WebSocket.CONNECTING)
+            this.socket?.readyState === WebSocket.OPEN ||
+            this.socket?.readyState === WebSocket.CONNECTING
         ) {
             this.log("warn", "WebSocket already connected or connecting.");
             return;
@@ -50,7 +56,7 @@ export class WsApiService {
             this.currentReconnectAttempt = 0;
             this.reconnecting = false;
             this.log("info", `WebSocket connected to ${this.url}`);
-            if (onOpen) onOpen();
+            this.eventHandlers.open.forEach((handler) => handler());
         };
 
         this.socket.onmessage = (event) => {
@@ -64,11 +70,13 @@ export class WsApiService {
 
         this.socket.onerror = (error) => {
             this.log("error", "WebSocket error occurred", error);
+            this.eventHandlers.error.forEach((handler) => handler(error));
             this.attemptReconnect();
         };
 
-        this.socket.onclose = () => {
+        this.socket.onclose = (event) => {
             this.log("info", "WebSocket connection closed");
+            this.eventHandlers.close.forEach((handler) => handler(event));
             if (!this.reconnecting) {
                 this.attemptReconnect();
             }
@@ -83,8 +91,9 @@ export class WsApiService {
             this.reconnecting = true;
             this.log(
                 "warn",
-                `Attempting reconnect in ${this.reconnectInterval / 1000} seconds. Attempt: ${this.currentReconnectAttempt + 1}`,
+                `Reconnecting in ${this.reconnectInterval / 1000}s (Attempt ${this.currentReconnectAttempt + 1}/${this.reconnectAttempts})`,
             );
+
             setTimeout(() => {
                 this.currentReconnectAttempt++;
                 this.connect();
@@ -96,55 +105,91 @@ export class WsApiService {
         }
     }
 
-    isConnected() {
-        return this.socket && this.socket.readyState === WebSocket.OPEN;
+    // 方法重载实现类型安全
+    on<T>(type: string, handler: WebSocketMessageHandler<T>): void;
+    on(type: "error", handler: (event: Event) => void): void;
+    on(type: "close", handler: (event: CloseEvent) => void): void;
+    on(type: "open", handler: () => void): void;
+    on(type: string, handler: any): void {
+        switch (type) {
+            case "error":
+                this.eventHandlers.error.push(handler);
+                break;
+            case "close":
+                this.eventHandlers.close.push(handler);
+                break;
+            case "open":
+                this.eventHandlers.open.push(handler);
+                break;
+            default:
+                if (!this.messageHandlers.has(type)) {
+                    this.messageHandlers.set(type, []);
+                }
+                this.messageHandlers.get(type)?.push(handler);
+        }
+    }
+
+    off<T>(type: string, handler: WebSocketMessageHandler<T>): void;
+    off(type: "error", handler: (event: Event) => void): void;
+    off(type: "close", handler: (event: CloseEvent) => void): void;
+    off(type: "open", handler: () => void): void;
+    off(type: string, handler: any): void {
+        switch (type) {
+            case "error":
+                this.eventHandlers.error = this.eventHandlers.error.filter(
+                    (h) => h !== handler,
+                );
+                break;
+            case "close":
+                this.eventHandlers.close = this.eventHandlers.close.filter(
+                    (h) => h !== handler,
+                );
+                break;
+            case "open":
+                this.eventHandlers.open = this.eventHandlers.open.filter(
+                    (h) => h !== handler,
+                );
+                break;
+            default:
+                const handlers = this.messageHandlers.get(type);
+                if (handlers) {
+                    this.messageHandlers.set(
+                        type,
+                        handlers.filter((h) => h !== handler),
+                    );
+                }
+        }
     }
 
     send<T>(type: string, payload: T) {
-        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+        if (!this.isConnected()) {
             this.log("warn", "WebSocket is not open, message not sent.");
             return;
         }
 
         const message: WebSocketMessage<T> = { type, payload };
-        this.socket.send(JSON.stringify(message));
+        this.socket?.send(JSON.stringify(message));
     }
 
-    on<T>(type: string, handler: WebSocketMessageHandler<T>) {
-        if (!this.eventListeners.has(type)) {
-            this.eventListeners.set(type, []);
-        }
-        this.eventListeners.get(type)?.push(handler);
-    }
-
-    off<T>(type: string, handler: WebSocketMessageHandler<T>) {
-        if (this.eventListeners.has(type)) {
-            const handlers = this.eventListeners.get(
-                type,
-            ) as WebSocketMessageHandler<T>[];
-            const index = handlers.indexOf(handler);
-            if (index > -1) {
-                handlers.splice(index, 1);
-            }
-            if (handlers.length === 0) {
-                this.eventListeners.delete(type);
-            }
-        }
+    isConnected() {
+        return this.socket?.readyState === WebSocket.OPEN;
     }
 
     private handleMessage(message: WebSocketMessage<any>) {
-        const handlers = this.eventListeners.get(message.type);
-        if (handlers) {
-            handlers.forEach((handler) => handler(message));
-        }
+        const handlers = this.messageHandlers.get(message.type) || [];
+        handlers.forEach((handler) => handler(message));
     }
 
     dispose() {
         if (this.socket) {
             this.socket.close();
             this.socket = null;
-            this.eventListeners.clear();
         }
+        this.messageHandlers.clear();
+        this.eventHandlers.error = [];
+        this.eventHandlers.close = [];
+        this.eventHandlers.open = [];
+        this.log("info", "WebSocket service disposed");
     }
 
     private log(
@@ -154,15 +199,18 @@ export class WsApiService {
     ) {
         if (this.logLevel === "none") return;
 
-        if (this.logLevel === "info" && level === "info") {
-            console.log(`[WebSocketService] INFO: ${message}`, ...args);
-        } else if (
-            this.logLevel === "warn" &&
-            (level === "warn" || level === "error")
-        ) {
-            console.warn(`[WebSocketService] WARN: ${message}`, ...args);
-        } else if (level === "error") {
-            console.error(`[WebSocketService] ERROR: ${message}`, ...args);
+        const logMessage = `[WebSocketService] ${message}`;
+        switch (level) {
+            case "info":
+                if (this.logLevel === "info") console.log(logMessage, ...args);
+                break;
+            case "warn":
+                if (this.logLevel !== "error")
+                    console.warn(logMessage, ...args);
+                break;
+            case "error":
+                console.error(logMessage, ...args);
+                break;
         }
     }
 }

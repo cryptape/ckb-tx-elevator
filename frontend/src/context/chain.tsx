@@ -31,7 +31,10 @@ export function ChainProvider({
     const resolveRef = useRef<() => void>();
 
     // 确保网络变化时重建实例
-    if (!chainServiceRef.current) {
+    if (
+        !chainServiceRef.current ||
+        chainServiceRef.current.network !== network
+    ) {
         chainServiceRef.current = new ChainService(network);
 
         // 创建新的连接 Promise
@@ -41,13 +44,12 @@ export function ChainProvider({
 
         // 监听 WebSocket 连接状态
         const wsClient = chainServiceRef.current.wsClient as WsApiService;
+        wsClient.connect();
 
-        wsClient.connect(() => {
-            console.log("global chain service connected");
+        wsClient.on("open", () => {
             setIsConnected(true);
             resolveRef.current?.();
         });
-
         wsClient.on("close", () => setIsConnected(false));
         wsClient.on("error", () => setIsConnected(false));
     }
@@ -58,7 +60,7 @@ export function ChainProvider({
             // 如果有需要关闭的连接，在这里添加清理逻辑
             chainServiceRef.current?.wsClient?.dispose(); // 假设 WsApiService 有 close 方法
         };
-    }, []);
+    }, [network]);
 
     // 等待连接的公共方法
     const waitForConnection = async () => {
