@@ -203,7 +203,7 @@ const Pool: FunctionalComponent = () => {
 
     return (
         <div>
-            <div>
+            <div className={"flex justify-center items-center"}>
                 <QueueComponent
                     initialProposedTxs={initProposedTxs}
                     initialCommittedTxs={initCommittedTxs}

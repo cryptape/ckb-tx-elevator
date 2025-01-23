@@ -61,6 +61,7 @@ export const Line: FunctionalComponent<LineProps> = ({ title, txs }) => {
                 strokeStyle: "gray",
             },
         });
+
         Matter.Composite.add(engine.world, [ground, wall1, wall2]);
 
         // run the renderer
