@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { ChainService } from "../../service/api";
 import ElevatorCar from "./car";
-import ElevatorUpButton from "./up-btn";
+import ElevatorMiner from "./miner";
 import ElevatorPanel from "./panel";
 import ElevatorHeader from "./header";
 import { useAtomValue } from "jotai";
@@ -52,34 +52,36 @@ export default function Elevator() {
             ? "border-border-mainnet-black"
             : "border-border-testnet-black";
     return (
-        <div
-            className={
-                "flex justify-center align-center items-center w-fit mx-auto gap-4"
-            }
-        >
-            <ElevatorUpButton doorClosing={doorClosing} />
+        <div className={"flex justify-center align-center items-center gap-2"}>
+            <div className={"w-1/5 self-end"}>
+                <ElevatorMiner doorClosing={doorClosing} />
+            </div>
 
-            <div
-                className={`${bgElevatorFrame} flex flex-col justify-center mx-auto rounded-lg border-[20px] ${borderBlack}`}
-            >
-                <ElevatorHeader
-                    blockNumber={+tipBlock?.blockHeader.block_number}
-                    doorClosing={doorClosing}
-                />
-                <div className={"px-20"}>
-                    <ElevatorCar
-                        blockHeader={tipBlock?.blockHeader}
-                        transactions={tipBlock?.committedTransactions}
-                        setFromDoorClosing={setDoorClosing}
+            <div>
+                <div
+                    className={`${bgElevatorFrame} flex flex-col justify-center mx-auto rounded-lg border-[20px] ${borderBlack}`}
+                >
+                    <ElevatorHeader
+                        blockNumber={+tipBlock?.blockHeader.block_number}
+                        doorClosing={doorClosing}
                     />
+                    <div className={"px-20"}>
+                        <ElevatorCar
+                            blockHeader={tipBlock?.blockHeader}
+                            transactions={tipBlock?.committedTransactions}
+                            setFromDoorClosing={setDoorClosing}
+                        />
+                    </div>
                 </div>
             </div>
 
-            <ElevatorPanel
-                transactionNumber={tipBlock?.committedTransactions.length}
-                sizeBytes={20}
-                occupationPercentage={20}
-            />
+            <div className={"w-1/5"}>
+                <ElevatorPanel
+                    transactionNumber={tipBlock?.committedTransactions.length}
+                    sizeBytes={20}
+                    occupationPercentage={20}
+                />
+            </div>
         </div>
     );
 }

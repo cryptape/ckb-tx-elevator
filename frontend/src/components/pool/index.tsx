@@ -1,7 +1,7 @@
 import { FunctionalComponent } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { ChainService } from "../../service/api";
-import QueueComponent from "./queue";
+import QueueComponent from "./factory";
 import { Network, Transaction } from "../../service/type";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";

@@ -68,8 +68,7 @@ export default function SpaceBanner() {
 
             {/* 右侧太空场景 */}
             <div className="flex-1 w-full h-full relative">
-                {/* 半月 - 只保留clip-path在CSS */}
-                <div className="absolute top-[-40px] right-[-20px] w-36 h-36 bg-gray-100 rounded-full shadow-xl opacity-80 clip-moon transform rotate-45">
+                <div className="absolute top-[-40px] right-[-20px] w-36 h-36 bg-gray-100 rounded-full shadow-xl opacity-80">
                     <div
                         className="absolute inset-0 rounded-full opacity-70 mix-blend-multiply"
                         style={{

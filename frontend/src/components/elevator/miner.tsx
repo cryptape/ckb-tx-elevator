@@ -6,7 +6,7 @@ export interface ElevatorUpButtonProps {
     doorClosing: boolean;
 }
 
-const ElevatorUpButton: FunctionComponent<ElevatorUpButtonProps> = ({
+const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
     doorClosing,
 }) => {
     const chainTheme = useAtomValue(chainThemeAtom);
@@ -15,7 +15,7 @@ const ElevatorUpButton: FunctionComponent<ElevatorUpButtonProps> = ({
             ? "bg-brand-mainnet"
             : "bg-brand-testnet";
     return (
-        <div className={"self-end"}>
+        <div>
             <div
                 class={
                     "flex flex-col h-full align-bottom items-center flex-grow"
@@ -43,4 +43,4 @@ const ElevatorUpButton: FunctionComponent<ElevatorUpButtonProps> = ({
     );
 };
 
-export default ElevatorUpButton;
+export default ElevatorMiner;
