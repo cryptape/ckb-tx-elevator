@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from "preact/hooks";
 import { Transaction } from "../../service/type";
-import { Line } from "./line";
+import { PendingLine } from "./pending-line";
+import { ProposalLine } from "./proposal-line";
+import { CommittingLine } from "./committing-line";
 
 type TxStatus = "pending" | "proposing" | "proposed" | "committed" | "none";
 
@@ -229,18 +231,20 @@ const QueueComponent: React.FC<QueueProps> = ({
     }, [stateChanges]);
 
     return (
-        <div className="flex flex-col relative align-center justify-center items-center">
+        <div className="flex flex-col relative align-center justify-start items-left">
             <div>
                 <img src="/assets/svg/factory-header.svg" alt="" />
             </div>
             <div>
-                <Line txs={pendingTxs} title="pending" />
+                <PendingLine txs={pendingTxs} title="pending" />
             </div>
+
             <div>
-                <Line txs={proposedTxs} title="proposed" />
+                <ProposalLine txs={proposedTxs} title="proposal" />
             </div>
+
             <div>
-                <Line txs={proposingTxs} title="committing" />
+                <CommittingLine txs={committedTxs} title="committing" />
             </div>
 
             <div>

@@ -3,12 +3,15 @@ import Matter from "matter-js";
 import { Transaction } from "../../service/type";
 import { FunctionalComponent } from "preact";
 
-export interface LineProps {
+export interface PendingLineProps {
     title: string;
     txs: Transaction[];
 }
 
-export const Line: FunctionalComponent<LineProps> = ({ title, txs }) => {
+export const PendingLine: FunctionalComponent<PendingLineProps> = ({
+    title,
+    txs,
+}) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
 
@@ -19,7 +22,7 @@ export const Line: FunctionalComponent<LineProps> = ({ title, txs }) => {
 
     function createScene() {
         const width = 800;
-        const height = 100;
+        const height = 300;
 
         let Engine = Matter.Engine;
         let Render = Matter.Render;
@@ -130,9 +133,21 @@ export const Line: FunctionalComponent<LineProps> = ({ title, txs }) => {
 
     return (
         <div>
-            <div>{title}</div>
-            <div ref={containerRef}>
-                <canvas ref={canvasRef} />
+            <div
+                className={`flex justify-start items-baseline border-b-4 border-brand-mainnet`}
+            >
+                <div>
+                    <img src="/assets/svg/line-left-start.svg" alt="" />
+                </div>
+                <div>
+                    <img src="/assets/svg/line-left.svg" alt="" />
+                </div>
+                <div ref={containerRef}>
+                    <canvas ref={canvasRef} />
+                </div>
+                <div>
+                    <img src="/assets/svg/line-right.svg" alt="" />
+                </div>
             </div>
         </div>
     );
