@@ -1,27 +1,46 @@
 import { useEffect, useRef } from "preact/hooks";
 import Matter from "matter-js";
-import { Transaction } from "../../service/type";
+import {
+    Transaction,
+    TransactionType,
+    TransactionTypeEnum,
+} from "../../service/type";
 import { FunctionalComponent } from "preact";
+import { transactionSquareSize } from "../elevator/util";
 
-export interface LineProps {
+export interface ProposalLineProps {
     title: string;
     txs: Transaction[];
 }
 
-export const ProposalLine: FunctionalComponent<LineProps> = ({
+export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
     title,
     txs,
 }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
-
     const engineRef = useRef(null);
+    const prevTxs = useRef<Transaction[]>([]);
 
-    // 用 ref 保存上一次的 txs 数组
-    const prevTxsRef = useRef<Transaction[]>([]);
+    function createTxBox(tx: Transaction) {
+        const size = transactionSquareSize(tx.size);
+        const color =
+            tx.type != null
+                ? TransactionType.toBgColor(+tx.type as TransactionTypeEnum)
+                : "black";
+        const box = Matter.Bodies.rectangle(20, 80, size, size, {
+            render: {
+                fillStyle: color,
+                strokeStyle: "black",
+                lineWidth: 3,
+            },
+        });
+        box.label = tx.tx_hash;
+        return box;
+    }
 
     function createScene() {
-        const width = 1000;
+        const width = 800;
         const height = 300;
 
         let Engine = Matter.Engine;
@@ -42,6 +61,9 @@ export const ProposalLine: FunctionalComponent<LineProps> = ({
                 wireframes: false,
             },
         });
+
+        // create two boxes and a ground
+        const txBoxes = txs.map((tx, i) => createTxBox(tx));
 
         // 添加示例物体
         const wall1 = Matter.Bodies.rectangle(width, 0, 1, height * 2, {
@@ -65,7 +87,7 @@ export const ProposalLine: FunctionalComponent<LineProps> = ({
             },
         });
 
-        Matter.Composite.add(engine.world, [ground, wall1, wall2]);
+        Matter.Composite.add(engine.world, [...txBoxes, ground, wall1, wall2]);
 
         // run the renderer
         Render.run(render);
@@ -79,7 +101,32 @@ export const ProposalLine: FunctionalComponent<LineProps> = ({
 
     useEffect(() => {
         createScene();
+
+        // 初始化时设置初始值
+        prevTxs.current = txs;
     }, []);
+
+    // 新增 useEffect 用于跟踪 txs 变化
+    useEffect(() => {
+        if (!engineRef.current) return;
+
+        // 通过哈希比较找出差异
+        const currentHashes = new Set(txs.map((tx) => tx.tx_hash));
+        const prevHashes = new Set(prevTxs.current.map((tx) => tx.tx_hash));
+
+        // 找出新增交易
+        const added = txs.filter((tx) => !prevHashes.has(tx.tx_hash));
+        // 找出移除交易
+        const removed = prevTxs.current.filter(
+            (tx) => !currentHashes.has(tx.tx_hash),
+        );
+
+        // 调用更新方法
+        update(added, removed);
+
+        // 更新前一次记录
+        prevTxs.current = txs;
+    }, [txs]); // 依赖 txs 的变化
 
     const update = (addTxs: Transaction[], delTxs: Transaction[]) => {
         delTxs.forEach((tx) => {
@@ -89,47 +136,9 @@ export const ProposalLine: FunctionalComponent<LineProps> = ({
             if (body) Matter.Composite.remove(engineRef.current.world, body);
         });
 
-        const boxes = addTxs.map((tx, i) => {
-            const box = Matter.Bodies.rectangle(700, 20, 40, 40, {
-                label: tx.tx_hash,
-                render: { fillStyle: "gray" },
-            });
-            return box;
-        });
+        const boxes = addTxs.map((tx, i) => createTxBox(tx));
         Matter.Composite.add(engineRef.current.world, boxes);
     };
-
-    useEffect(() => {
-        // 获取新旧交易数组
-        const prevTxs = prevTxsRef.current;
-        const currentTxs = txs;
-
-        // 创建哈希集合用于快速查找
-        const prevHashes = new Set(prevTxs.map((tx) => tx.tx_hash));
-        const currentHashes = new Set(currentTxs.map((tx) => tx.tx_hash));
-
-        // 计算差异
-        const addedTxs = currentTxs.filter((tx) => !prevHashes.has(tx.tx_hash));
-        const removedTxs = prevTxs.filter(
-            (tx) => !currentHashes.has(tx.tx_hash),
-        );
-
-        // 处理新增交易（示例：打印到控制台）
-        if (addedTxs.length) {
-            console.log("🚀 新增交易:", addedTxs);
-            // 这里可以触发动画、更新状态等操作
-        }
-
-        // 处理移除交易（示例：打印到控制台）
-        if (removedTxs.length) {
-            console.log("🗑️ 移除交易:", removedTxs);
-            // 这里可以触发动画、更新状态等操作
-        }
-        update(addedTxs, removedTxs);
-
-        // 更新历史记录（注意：深拷贝仅在必要时使用）
-        prevTxsRef.current = currentTxs;
-    }, [txs]); // 依赖项确保 txs 变化时触发
 
     return (
         <div>
