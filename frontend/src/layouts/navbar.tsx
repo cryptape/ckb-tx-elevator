@@ -32,8 +32,8 @@ const Navbar: FunctionalComponent = () => {
 
     const style =
         chainTheme === ChainTheme.mainnet
-            ? "border-border-mainnet-black bg-brand-mainnet"
-            : "border-border-testnet-black bg-brand-testnet";
+            ? "border-brand-mainnet bg-brand-mainnet"
+            : "border-brand-testnet bg-brand-testnet";
 
     return (
         <div

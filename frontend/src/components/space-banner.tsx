@@ -1,4 +1,3 @@
-// components/SpaceBanner.tsx
 import { h } from "preact";
 import { useState } from "preact/hooks";
 import { useAtomValue } from "jotai";
@@ -23,22 +22,36 @@ export default function SpaceBanner() {
             : "text-brand-testnet";
     return (
         <div
-            className={`relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-02 to-surface-hover-01 flex flex-col md:flex-row items-center overflow-hidden border-2 ${borderBlack}`}
+            className={`relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-inverse to-surface-hover-inverse flex flex-col md:flex-row items-center overflow-hidden border-2 ${borderBlack}`}
         >
             {/* 左侧太空场景 */}
             <div className="flex-1 w-full h-full relative">
+                <div className="absolute top-0 left-0 w-36 h-36 bg-gray-100 rounded-full shadow-xl">
+                    <div
+                        className="absolute inset-0 rounded-full mix-blend-multiply"
+                        style={{
+                            backgroundImage: "url(/assets/svg/space/moon.svg)",
+                            backgroundSize: "cover",
+                        }}
+                    />
+                </div>
+
                 {/* 浮动元素 */}
                 <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-float" />
                 <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-yellow-300 rounded-full animate-float animation-delay-1000" />
 
-                {/* 太空站 */}
-                <div className="absolute top-32 left-20 animate-float animation-delay-500">
-                    <div className="w-8 h-8 bg-gray-400 rounded-tr-2xl" />
-                    <div className="w-12 h-4 bg-gray-300 ml-4 mt-2 rounded" />
+                {/* stars */}
+                <div className="absolute top-32 left-40 animate-float animation-delay-500">
+                    <img src="/assets/svg/space/star.svg" alt="" />
+                </div>
+
+                {/* Forks */}
+                <div className="absolute top-10 left-60 opacity-80 animate-float animation-delay-500">
+                    <img src="/assets/svg/space/forks.svg" alt="" />
                 </div>
 
                 {/* 小行星 */}
-                <div className="absolute bottom-20 right-40 w-16 h-16 bg-gray-600 rounded-full animate-float animation-delay-1500">
+                <div className="absolute bottom-10 right-40 w-16 h-16 bg-gray-600 rounded-full animate-float animation-delay-1500">
                     <div className="w-4 h-4 bg-gray-700 ml-4 mt-2 rounded-full" />
                 </div>
             </div>
@@ -51,16 +64,24 @@ export default function SpaceBanner() {
                 <div class={"flex flex-col"}>
                     <div class={"flex justify-between gap-2"}>
                         <div class={"flex justify-start gap-2"}>
-                            <h4>{avgBlockTime}s</h4>
-                            <div class={`text-text-secondary`}>Block</div>
+                            <h4 class={"text-text-inverse"}>{avgBlockTime}s</h4>
+                            <div class={"text-text-inverse-secondary"}>
+                                Block
+                            </div>
                         </div>
                         <div class={"flex justify-start gap-2"}>
-                            <h4>{avgFeeRate}</h4>
-                            <div class={`text-text-secondary`}> s/kB</div>
+                            <h4 class={"text-text-inverse"}>{avgFeeRate}</h4>
+                            <div class={`text-text-inverse-secondary`}>
+                                {" "}
+                                s/kB
+                            </div>
                         </div>
                         <div class={"flex justify-start gap-2"}>
-                            <h4>{epoch}</h4>
-                            <div class={`text-text-secondary`}> epoch</div>
+                            <h4 class={"text-text-inverse"}>{epoch}</h4>
+                            <div class={`text-text-inverse-secondary`}>
+                                {" "}
+                                epoch
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -68,29 +89,23 @@ export default function SpaceBanner() {
 
             {/* 右侧太空场景 */}
             <div className="flex-1 w-full h-full relative">
-                <div className="absolute top-[-40px] right-[-20px] w-36 h-36 bg-gray-100 rounded-full shadow-xl opacity-80">
-                    <div
-                        className="absolute inset-0 rounded-full opacity-70 mix-blend-multiply"
-                        style={{
-                            backgroundImage: "url(/assets/img/moon.gif)",
-                            backgroundSize: "cover",
-                        }}
-                    />
-                </div>
-
                 {/* 浮动元素 */}
                 <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-float" />
                 <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-yellow-300 rounded-full animate-float animation-delay-1000" />
 
-                {/* 太空站 */}
+                {/* mining machine */}
                 <div className="absolute top-32 left-20 animate-float animation-delay-500">
-                    <div className="w-8 h-8 bg-gray-400 rounded-tr-2xl" />
-                    <div className="w-12 h-4 bg-gray-300 ml-4 mt-2 rounded" />
+                    <img src="/assets/svg/space/mining.svg" alt="" />
                 </div>
 
-                {/* 小行星 */}
-                <div className="absolute bottom-20 right-40 w-16 h-16 bg-gray-600 rounded-full animate-float animation-delay-1500">
-                    <div className="w-4 h-4 bg-gray-700 ml-4 mt-2 rounded-full" />
+                {/* launch rocket */}
+                <div className="absolute bottom-20 right-40 rotate-[30deg] animate-float animation-delay-1500">
+                    <img src="/assets/svg/space/launch.svg" alt="" />
+                </div>
+
+                {/* stars */}
+                <div className="absolute top-40 right-20 animate-float animation-delay-500">
+                    <img src="/assets/svg/space/star.svg" alt="" />
                 </div>
             </div>
         </div>
