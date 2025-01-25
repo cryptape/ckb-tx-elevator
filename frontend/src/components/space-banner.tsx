@@ -46,12 +46,46 @@ export default function SpaceBanner() {
                 </div>
 
                 {/* Forks */}
-                <div className="absolute top-10 left-60 opacity-80 animate-float animation-delay-500">
-                    <img src="/assets/svg/space/forks.svg" alt="" />
+                <div className="absolute top-10 left-60 opacity-80 animate-float animation-delay-500 group">
+                    <img
+                        src="/assets/svg/space/forks.svg"
+                        alt=""
+                        className="cursor-help relative z-10"
+                    />
+
+                    {/* 中央浮动说明文字 */}
+                    <div
+                        className="z-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                    opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                    transition-all duration-300
+                    bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3
+                    text-sm text-white w-[220px] text-center
+                    shadow-xl z-20"
+                    >
+                        <div className="absolute inset-0 border-2 border-white/20 rounded-xl pointer-events-none" />
+                        <div>
+                            <a
+                                href="https://docs.nervos.org/docs/history-and-hard-forks/ckb-hard-fork-history#1st-hard-fork--ckb-edition-mirana-2021"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                1st Hard Fork – CKB Edition Mirana (2021)
+                            </a>
+                        </div>
+                        <div>
+                            <a
+                                href="https://docs.nervos.org/docs/history-and-hard-forks/ckb-hard-fork-history#2nd-hard-fork--ckb-edition-meepo-2024"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                2nd Hard Fork – CKB Edition Meepo (2024)
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 {/* 小行星 */}
-                <div className="absolute bottom-10 right-40 w-16 h-16 bg-gray-600 rounded-full animate-float animation-delay-1500">
+                <div className="absolute bottom-10 left-2/3 w-16 h-16 bg-gray-600 rounded-full animate-float animation-delay-1500">
                     <div className="w-4 h-4 bg-gray-700 ml-4 mt-2 rounded-full" />
                 </div>
             </div>
