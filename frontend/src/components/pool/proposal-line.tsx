@@ -143,9 +143,9 @@ export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
     return (
         <div>
             <div
-                className={`flex justify-end items-baseline border-b-4 border-brand-mainnet`}
+                className={`flex justify-end items-center border-b-4 border-brand-mainnet`}
             >
-                <div>
+                <div className={"h-[300px] flex items-end"}>
                     <img src="/assets/svg/second-line-left.svg" alt="" />
                 </div>
                 <div ref={containerRef}>
@@ -153,9 +153,13 @@ export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
                 </div>
                 <div
                     className={
-                        "w-4 h-[300px] bg-brand-mainnet border-2 border-brand-mainnet min-h-full"
+                        "w-[250px] h-[300px] bg-brand-mainnet border-2 border-brand-mainnet min-h-full flex justify-center items-center"
                     }
-                ></div>
+                >
+                    <div className={"text-text-inverse"}>
+                        {title} Transactions
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -148,7 +148,12 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
                 <div>
                     <img src="/assets/svg/line-left-start.svg" alt="" />
                 </div>
-                <div>
+                <div className={"relative"}>
+                    <div
+                        className={"absolute bottom-6 left-8 text-text-inverse"}
+                    >
+                        {title} Transactions
+                    </div>
                     <img src="/assets/svg/line-left.svg" alt="" />
                 </div>
                 <div ref={containerRef}>

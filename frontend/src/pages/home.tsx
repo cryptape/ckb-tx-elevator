@@ -15,7 +15,7 @@ export function Home() {
             <Switcher
                 onSwitch={(view) => setShowElevator(view === "elevator")}
             />
-            <div class="h-[2000px] relative" style={{ perspective: "1000px" }}>
+            <div class="h-[2200px] relative" style={{ perspective: "1000px" }}>
                 <div
                     class={`transition-transform duration-1000 ease-out origin-top`}
                     style={{

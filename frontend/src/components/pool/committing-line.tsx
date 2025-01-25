@@ -143,22 +143,25 @@ export const CommittingLine: FunctionalComponent<LineProps> = ({
     return (
         <div>
             <div
-                className={`flex justify-start items-baseline border-b-4 border-brand-mainnet`}
+                className={`flex justify-start items-center border-b-4 border-brand-mainnet`}
             >
                 <div
                     className={
-                        "w-4 h-[300px] bg-brand-mainnet border-2 border-brand-mainnet min-h-full"
+                        "w-[300px] h-[300px] bg-brand-mainnet border-2 border-brand-mainnet min-h-full flex justify-center items-center"
                     }
-                ></div>
+                >
+                    <div className={"text-text-inverse"}>
+                        {title} Transactions
+                    </div>
+                </div>
 
                 <div ref={containerRef}>
                     <canvas ref={canvasRef} />
                 </div>
-                <div>
+                <div className={"h-[300px] flex items-end"}>
                     <img src="/assets/svg/line-right.svg" alt="" />
                 </div>
             </div>
-            <div>{title}</div>
         </div>
     );
 };

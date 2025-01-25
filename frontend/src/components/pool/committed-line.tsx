@@ -40,7 +40,7 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
 
     function createScene() {
         const width = 800;
-        const height = 200;
+        const height = 300;
 
         let Engine = Matter.Engine;
         let Render = Matter.Render;
@@ -83,11 +83,11 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
     return (
         <div>
             <div
-                className={`relative flex justify-center items-center overflow-hidden min-h-[450px]`}
+                className={`relative flex justify-center items-center overflow-hidden min-h-[560px]`}
             >
                 <div ref={containerRef}>
                     <div
-                        className={`absolute top-20 left-0 w-full h-full z-0 pointer-events-none`}
+                        className={`absolute top-30 left-0 w-full h-full z-0 pointer-events-none flex justify-center items-center`}
                     >
                         <img src="/assets/svg/pool-ground.svg" alt="" />
                     </div>

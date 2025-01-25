@@ -46,10 +46,10 @@ const Pool: FunctionalComponent = () => {
                         <img src="/assets/svg/factory-header.svg" alt="" />
                     </div>
                     <div className="flex flex-col relative align-center justify-start items-left">
-                        <PendingLine txs={pendingTxs} title="pending" />
-                        <ProposalLine txs={proposedTxs} title="pending" />
-                        <CommittingLine txs={proposingTxs} title="pending" />
-                        <CommittedLine txs={committedTxs} title="pending" />
+                        <PendingLine txs={pendingTxs} title="Pending" />
+                        <ProposalLine txs={proposedTxs} title="Proposal" />
+                        <CommittingLine txs={proposingTxs} title="Committing" />
+                        <CommittedLine txs={committedTxs} title="Committed" />
                     </div>
                 </div>
             </div>
