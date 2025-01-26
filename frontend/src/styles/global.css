@@ -1,4 +1,5 @@
-@import "styles/animate.css";
+@import "animate.css";
+@import "dseg/css/dseg.css";
 
 @tailwind base;
 @tailwind components;
@@ -6,10 +7,10 @@
 
 @font-face {
     font-family: "Open Runde";
-    src: url("./src/assets/fonts/OpenRunde-Medium.woff2") format("woff2"),
-        url("./src/assets/fonts/OpenRunde-Medium.woff") format("woff"),
-        url("./src/assets/fonts/OpenRunde-Semibold.woff2") format("woff2"),
-        url("./src/assets/fonts/OpenRunde-Semibold.woff") format("woff");
+    src: url("/assets/fonts/OpenRunde-Medium.woff2") format("woff2"),
+        url("/assets/fonts/OpenRunde-Medium.woff") format("woff"),
+        url("/assets/fonts/OpenRunde-Semibold.woff2") format("woff2"),
+        url("/assets/fonts/OpenRunde-Semibold.woff") format("woff");
     font-weight: normal;
     font-style: normal;
 }

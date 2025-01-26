@@ -14,6 +14,7 @@ import {
 } from "./util";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import ElevatorCapacity from "./capacity";
 
 export interface ElevatorCarProp {
     transactions: Transaction[];
@@ -212,14 +213,19 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
                             className={`w-[5%] h-full ${bgElevatorSide}`}
                         ></div>
                         <div
-                            className={`w-[90%] h-full flex flex-col justify-center align-middle gap-6 border-2 ${borderBlack} ${bgElevatorBack}`}
+                            className={`w-[90%] h-full flex flex-col pt-4 border-2 ${borderBlack} ${bgElevatorBack}`}
                         >
+                            <ElevatorCapacity />
                             <div
-                                class={`w-full border-[10px] ${borderElevatorFrame}`}
-                            ></div>
-                            <div
-                                class={`w-full border-[10px] ${borderElevatorFrame}`}
-                            ></div>
+                                className={`flex flex-col justify-center align-middle gap-6 mt-20`}
+                            >
+                                <div
+                                    class={`w-full border-[10px] ${borderElevatorFrame}`}
+                                ></div>
+                                <div
+                                    class={`w-full border-[10px] ${borderElevatorFrame}`}
+                                ></div>
+                            </div>
                         </div>
                         <div
                             className={`w-[5%] h-full ${bgElevatorSide}`}

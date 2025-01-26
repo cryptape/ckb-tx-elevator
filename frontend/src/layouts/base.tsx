@@ -7,7 +7,7 @@ interface BaseLayoutProps {
 
 const BaseLayout: FunctionComponent<BaseLayoutProps> = ({ children }) => {
     return (
-        <div className="base-layout">
+        <div>
             <Navbar />
             {children}
         </div>
