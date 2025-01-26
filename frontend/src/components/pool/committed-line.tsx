@@ -1,12 +1,16 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import Matter from "matter-js";
 import {
+    Network,
     Transaction,
     TransactionType,
     TransactionTypeEnum,
 } from "../../service/type";
-import { FunctionalComponent } from "preact";
+import { FunctionalComponent, JSX } from "preact";
 import { transactionSquareSize } from "../elevator/util";
+import { useAtomValue } from "jotai";
+import { chainThemeAtom } from "../../states/atoms";
+import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
 
 export interface CommittedLineProps {
     title: string;
@@ -17,6 +21,16 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
     title,
     txs,
 }) => {
+    const chainTheme = useAtomValue(chainThemeAtom);
+
+    const [tooltipContent, setTooltipContent] = useState<JSX.Element | null>(
+        null,
+    );
+    const [tooltipPosition, setTooltipPosition] = useState<{
+        x: number;
+        y: number;
+    } | null>(null);
+
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const engineRef = useRef(null);
@@ -64,7 +78,16 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
         // create two boxes and a ground
         const txBoxes = txs.map((tx, i) => createTxBox(tx));
 
-        Matter.Composite.add(engine.world, [...txBoxes]);
+        // create mouse constraint on hover
+        const mouse = Matter.Mouse.create(render.canvas);
+        const mouseConstraint = Matter.MouseConstraint.create(engine, {
+            mouse,
+            constraint: {
+                render: { visible: false },
+            },
+        });
+
+        Matter.Composite.add(engine.world, [...txBoxes, mouseConstraint]);
 
         // run the renderer
         Render.run(render);
@@ -74,6 +97,28 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
 
         // run the engine
         Runner.run(runner, engine);
+
+        // listen to mouse hover event
+        Matter.Events.on(mouseConstraint, "mousemove", (event) => {
+            const hoveredBody = Matter.Query.point(
+                Matter.Composite.allBodies(engine.world),
+                event.mouse.position,
+            )[0];
+
+            if (hoveredBody?.tooltip) {
+                const pos = bodyToScreenPosition(hoveredBody);
+                setTooltipContent(
+                    createTooltipContent(
+                        hoveredBody.tooltip,
+                        chainTheme as unknown as Network,
+                    ),
+                );
+                setTooltipPosition(pos);
+            } else {
+                setTooltipContent(null);
+                setTooltipPosition(null);
+            }
+        });
     }
 
     useEffect(() => {
@@ -92,6 +137,19 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
                         <img src="/assets/svg/pool-ground.svg" alt="" />
                     </div>
                     <canvas className={`z-2 relative`} ref={canvasRef} />
+                    {/* Transaction Box Tooltip 层 */}
+                    {tooltipContent && tooltipPosition && (
+                        <div
+                            className="absolute z-50 p-2 bg-gray-800 text-white rounded-md text-sm whitespace-pre"
+                            style={{
+                                left: `${tooltipPosition.x + 15}px`,
+                                top: `${tooltipPosition.y}px`,
+                                transform: "translateY(-50%)",
+                            }}
+                        >
+                            {tooltipContent}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
