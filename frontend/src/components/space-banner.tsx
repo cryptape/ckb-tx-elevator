@@ -31,7 +31,7 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
     const moonTop = isNewBlock === true ? "top-[-30px]" : "top-0";
     return (
         <div
-            className={`z-30 relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-inverse to-surface-hover-inverse flex flex-col md:flex-row items-center  border-2 ${borderBlack}`}
+            className={`relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-inverse to-surface-hover-inverse flex flex-col md:flex-row items-center  border-2 ${borderBlack}`}
         >
             {/* 左侧太空场景 */}
             <div className="z-30 flex-1 w-full h-full relative">
