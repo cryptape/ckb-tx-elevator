@@ -40,7 +40,11 @@ const Pool: FunctionalComponent = () => {
 
     return (
         <div>
-            <div className={"flex justify-center items-center"}>
+            <div
+                className={
+                    "flex justify-center items-center bg-surface-DEFAULT-01"
+                }
+            >
                 <div className="flex flex-col relative align-center justify-center">
                     <div>
                         <img src="/assets/svg/factory-header.svg" alt="" />

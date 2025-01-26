@@ -59,7 +59,11 @@ export default function Elevator({ setIsNewBlock }: ElevatorProp) {
             ? "border-border-mainnet-black"
             : "border-border-testnet-black";
     return (
-        <div className={"flex justify-center align-center items-center gap-2"}>
+        <div
+            className={
+                "flex justify-center align-center items-center gap-2 bg-surface-DEFAULT-01"
+            }
+        >
             <div className={"w-1/5 self-end"}>
                 <ElevatorMiner doorClosing={doorClosing} />
             </div>

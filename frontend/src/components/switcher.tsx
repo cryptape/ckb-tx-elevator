@@ -65,7 +65,7 @@ const Switcher: React.FC<SwitcherProps> = ({ front, back }) => {
             </div>
 
             {/* 3D flip container */}
-            <div class="h-[2200px] relative" style={{ perspective: "1000px" }}>
+            <div class="h-fit relative" style={{ perspective: "1000px" }}>
                 <div
                     class={`transition-transform duration-1000 ease-out origin-top`}
                     style={{
