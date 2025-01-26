@@ -1,9 +1,15 @@
-import { h } from "preact";
+import { FunctionalComponent, h } from "preact";
 import { useState } from "preact/hooks";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../states/atoms";
 
-export default function SpaceBanner() {
+export interface SpaceBannerProps {
+    isNewBlock?: boolean;
+}
+
+export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
+    isNewBlock,
+}) => {
     const chainTheme = useAtomValue(chainThemeAtom);
 
     const [avgBlockTime, setAvgBlockTime] = useState(7.91);
@@ -20,13 +26,19 @@ export default function SpaceBanner() {
         chainTheme === ChainTheme.mainnet
             ? "text-brand-mainnet"
             : "text-brand-testnet";
+
+    const moonSize = isNewBlock === true ? "w-48 h-48" : "w-36 h-36";
+    const moonTop = isNewBlock === true ? "top-[-30px]" : "top-0";
     return (
         <div
-            className={`relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-inverse to-surface-hover-inverse flex flex-col md:flex-row items-center overflow-hidden border-2 ${borderBlack}`}
+            className={`z-30 relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-inverse to-surface-hover-inverse flex flex-col md:flex-row items-center  border-2 ${borderBlack}`}
         >
             {/* 左侧太空场景 */}
-            <div className="flex-1 w-full h-full relative">
-                <div className="absolute top-0 left-0 w-36 h-36 bg-gray-100 rounded-full shadow-xl">
+            <div className="z-30 flex-1 w-full h-full relative">
+                {/* 月球 */}
+                <div
+                    className={`z-30 absolute ${moonTop} left-0 ${moonSize} bg-gray-100 rounded-full shadow-xl`}
+                >
                     <div
                         className="absolute inset-0 rounded-full mix-blend-multiply"
                         style={{
@@ -92,8 +104,12 @@ export default function SpaceBanner() {
 
             {/* 中间信息区域 */}
             <div className="flex-1 z-10 space-y-6 mb-8 pl-8 md:mb-0">
-                <h2 className={`${textBrand} text-center`}>
-                    Elevating Trust, Block by Block
+                <h2
+                    className={`${isNewBlock ? "text-brand-accent" : textBrand} text-center`}
+                >
+                    {isNewBlock
+                        ? "To The Moon!"
+                        : "Elevating Trust, Block by Block"}
                 </h2>
                 <div class={"flex flex-col"}>
                     <div class={"flex justify-between gap-2"}>
@@ -128,20 +144,81 @@ export default function SpaceBanner() {
                 <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-yellow-300 rounded-full animate-float animation-delay-1000" />
 
                 {/* mining machine */}
-                <div className="absolute top-32 left-20 animate-float animation-delay-500">
+                <div className="absolute top-32 left-20 animate-float animation-delay-500 group">
                     <img src="/assets/svg/space/mining.svg" alt="" />
+                    {/* 中央浮动说明文字 */}
+                    <div
+                        className="z-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                    opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                    transition-all duration-300
+                    bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3
+                    text-sm text-white w-[220px] text-center
+                    shadow-xl z-20"
+                    >
+                        <div className="absolute inset-0 border-2 border-white/20 rounded-xl pointer-events-none" />
+                        <div>
+                            <a
+                                href="https://docs.nervos.org/docs/mining/hardware"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                The first CKB ASIC mining machine was launched
+                                in 2020.03
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 {/* launch rocket */}
-                <div className="absolute bottom-20 right-40 rotate-[30deg] animate-float animation-delay-1500">
+                <div className="absolute bottom-20 left-1/2 rotate-[30deg] animate-float animation-delay-1500 group">
                     <img src="/assets/svg/space/launch.svg" alt="" />
+                    {/* 中央浮动说明文字 */}
+                    <div
+                        className="z-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                    opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                    transition-all duration-300
+                    bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3
+                    text-sm text-white w-[220px] text-center
+                    shadow-xl z-20"
+                    >
+                        <div className="absolute inset-0 border-2 border-white/20 rounded-xl pointer-events-none" />
+                        <div>
+                            <a
+                                href="https://docs.nervos.org/docs/mining/halving#when-will-ckbyte-be-halved"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                the CKB Mainnet launch at 16 Nov 2019
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 {/* stars */}
                 <div className="absolute top-40 right-20 animate-float animation-delay-500">
                     <img src="/assets/svg/space/star.svg" alt="" />
                 </div>
+
+                {/* meteor */}
+                <div className="h-full absolute top-0 right-20">
+                    <img
+                        className={"h-full"}
+                        src="/assets/svg/space/meteor.svg"
+                        alt=""
+                    />
+                </div>
+
+                {/* meteor 2 */}
+                <div className="h-full absolute top-0 right-0">
+                    <img
+                        className={"h-full"}
+                        src="/assets/svg/space/meteor.svg"
+                        alt=""
+                    />
+                </div>
             </div>
         </div>
     );
-}
+};
+
+export default SpaceBanner;

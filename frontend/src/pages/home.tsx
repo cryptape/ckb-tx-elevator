@@ -8,10 +8,10 @@ import Switcher from "../components/switcher";
 
 export function Home() {
     const [showElevator, setShowElevator] = useState(true);
-
+    const [isNewBlock, setIsNewBlock] = useState(false);
     return (
         <BaseLayout>
-            <SpaceBanner />
+            <SpaceBanner isNewBlock={isNewBlock} />
             <Switcher
                 onSwitch={(view) => setShowElevator(view === "elevator")}
             />
@@ -31,7 +31,7 @@ export function Home() {
                             transform: "translateZ(1px)",
                         }}
                     >
-                        <Elevator />
+                        <Elevator setIsNewBlock={setIsNewBlock} />
                         <Ground />
                     </div>
 

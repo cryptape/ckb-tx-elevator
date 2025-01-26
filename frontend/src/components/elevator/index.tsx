@@ -8,12 +8,21 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { TipBlockResponse } from "../../service/type";
 import { useChainService } from "../../context/chain";
 
-export default function Elevator() {
+export interface ElevatorProp {
+    setIsNewBlock?: (isNewBlock: boolean) => void;
+}
+
+export default function Elevator({ setIsNewBlock }: ElevatorProp) {
     const chainTheme = useAtomValue(chainThemeAtom);
     const { chainService, waitForConnection } = useChainService();
 
     const [tipBlock, setTipBlock] = useState<TipBlockResponse>(undefined);
     const [doorClosing, setDoorClosing] = useState(false);
+
+    const setDoorClosingAndIsNewBlock = (doorClosing: boolean) => {
+        setDoorClosing(doorClosing);
+        setIsNewBlock && setIsNewBlock(doorClosing);
+    };
 
     // subscribe to new block
     // todo: need unscribe when component unmount
@@ -67,7 +76,7 @@ export default function Elevator() {
                         <ElevatorCar
                             blockHeader={tipBlock?.blockHeader}
                             transactions={tipBlock?.committedTransactions || []}
-                            setFromDoorClosing={setDoorClosing}
+                            setFromDoorClosing={setDoorClosingAndIsNewBlock}
                         />
                     </div>
                 </div>
