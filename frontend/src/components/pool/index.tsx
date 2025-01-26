@@ -42,14 +42,14 @@ const Pool: FunctionalComponent = () => {
         <div>
             <div
                 className={
-                    "flex justify-center items-center bg-surface-DEFAULT-01"
+                    "h-full flex justify-center items-center bg-surface-DEFAULT-01"
                 }
             >
-                <div className="flex flex-col relative align-center justify-center">
+                <div className="h-full flex flex-col relative align-center justify-center">
                     <div>
                         <img src="/assets/svg/factory-header.svg" alt="" />
                     </div>
-                    <div className="flex flex-col relative align-center justify-start items-left">
+                    <div className="h-full flex flex-col relative align-center justify-start items-left">
                         <PendingLine txs={pendingTxs} title="Pending" />
                         <ProposalLine txs={proposedTxs} title="Proposal" />
                         <CommittingLine txs={proposingTxs} title="Committing" />

@@ -81,13 +81,13 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
     }, [txs[0]?.proposed_at_block_number]);
 
     return (
-        <div>
+        <div className={"h-full"}>
             <div
-                className={`relative flex justify-center items-center overflow-hidden min-h-[560px]`}
+                className={`h-full flex justify-center items-center overflow-hidden`}
             >
-                <div ref={containerRef}>
+                <div className={"h-[500px] relative"} ref={containerRef}>
                     <div
-                        className={`absolute top-30 left-0 w-full h-full z-0 pointer-events-none flex justify-center items-center`}
+                        className={`absolute bottom-20 left-0 z-0 pointer-events-none flex justify-center items-center`}
                     >
                         <img src="/assets/svg/pool-ground.svg" alt="" />
                     </div>
