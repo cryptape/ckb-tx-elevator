@@ -1,17 +1,20 @@
 import { useAtomValue } from "jotai";
 import { FunctionComponent } from "preact";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import { Hex } from "@ckb-ccc/core";
 
 interface Props {
     transactionNumber: number;
     sizeBytes: number;
     occupationPercentage: number;
+    blockHash: Hex;
 }
 
 const ElevatorPanel: FunctionComponent<Props> = ({
     transactionNumber,
     sizeBytes,
     occupationPercentage,
+    blockHash,
 }) => {
     const chainTheme = useAtomValue(chainThemeAtom);
     const bgBrand =
@@ -50,11 +53,17 @@ const ElevatorPanel: FunctionComponent<Props> = ({
                     </h3>
                 </div>
             </div>
-            <button
+            <div
                 className={`mt-4 ${bgBrand} py-2 px-4 rounded-md ${bgBrandHover} text-text-inverse`}
             >
-                View more
-            </button>
+                <a
+                    href={`/block/${blockHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View more
+                </a>
+            </div>
         </div>
     );
 };

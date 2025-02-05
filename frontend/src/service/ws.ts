@@ -7,6 +7,14 @@ export interface WebSocketMessage<T> {
 
 export type WebSocketMessageHandler<T> = (message: WebSocketMessage<T>) => void;
 
+export enum WebSocketConnectionState {
+    CONNECTING = "CONNECTING",
+    OPEN = "OPEN",
+    CLOSING = "CLOSING",
+    CLOSED = "CLOSED",
+    UNKNOWN = "UNKNOWN",
+}
+
 export interface WebSocketServiceOptions {
     url?: string;
     reconnectInterval?: number; // 毫秒，默认 3000
@@ -173,6 +181,21 @@ export class WsApiService {
 
     isConnected() {
         return this.socket?.readyState === WebSocket.OPEN;
+    }
+
+    get connectionState(): WebSocketConnectionState {
+        switch (this.socket?.readyState) {
+            case WebSocket.CONNECTING:
+                return WebSocketConnectionState.CONNECTING;
+            case WebSocket.OPEN:
+                return WebSocketConnectionState.OPEN;
+            case WebSocket.CLOSING:
+                return WebSocketConnectionState.CLOSING;
+            case WebSocket.CLOSED:
+                return WebSocketConnectionState.CLOSED;
+            default:
+                return WebSocketConnectionState.UNKNOWN;
+        }
     }
 
     private handleMessage(message: WebSocketMessage<any>) {
