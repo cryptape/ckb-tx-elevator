@@ -9,8 +9,9 @@ import {
 import { FunctionalComponent, JSX } from "preact";
 import { transactionSquareSize } from "../elevator/util";
 import { useAtomValue } from "jotai";
-import { chainThemeAtom } from "../../states/atoms";
+import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
+import { SignBoard } from "./signboard";
 
 export interface LineProps {
     title: string;
@@ -61,7 +62,7 @@ export const CommittingLine: FunctionalComponent<LineProps> = ({
     }
 
     function createScene() {
-        const width = 800;
+        const width = 1200;
         const height = 300;
 
         let Engine = Matter.Engine;
@@ -198,21 +199,23 @@ export const CommittingLine: FunctionalComponent<LineProps> = ({
         Matter.Composite.add(engineRef.current.world, boxes);
     };
 
+    const borderColor =
+        chainTheme === ChainTheme.mainnet
+            ? "border-brand-mainnet"
+            : "border-brand-testnet";
+    const minerRight =
+        chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/pool/mainnet/miner-right.svg"
+            : "/assets/svg/pool/testnet/miner-right.svg";
+
     return (
         <div>
             <div
-                className={`flex justify-start items-center border-b-4 border-brand-mainnet`}
+                className={`relative flex justify-start items-center pt-[100px] border-b-8 border-l-8 ${borderColor}`}
             >
-                <div
-                    className={
-                        "w-[300px] h-[300px] bg-brand-mainnet border-2 border-brand-mainnet min-h-full flex justify-center items-center"
-                    }
-                >
-                    <div className={"text-text-inverse"}>
-                        {title} Transactions
-                    </div>
+                <div className={"absolute top-0 left-1/2 -translate-x-1/2"}>
+                    <SignBoard title={title} count={txs.length} />
                 </div>
-
                 <div className={"relative"} ref={containerRef}>
                     <canvas ref={canvasRef} />
                     {/* Transaction Box Tooltip 层 */}
@@ -230,7 +233,7 @@ export const CommittingLine: FunctionalComponent<LineProps> = ({
                     )}
                 </div>
                 <div className={"h-[300px] flex items-end"}>
-                    <img src="/assets/svg/line-right.svg" alt="" />
+                    <img src={minerRight} alt="" />
                 </div>
             </div>
         </div>

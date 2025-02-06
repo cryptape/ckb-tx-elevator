@@ -71,7 +71,7 @@ const Navbar: FunctionalComponent = () => {
                 </button>
             </div>
 
-            <div class="hidden md:flex gap-2 bg-black">
+            <div class="hidden md:flex gap-2 bg-black z-50">
                 <NetworkSelector />
                 {tabs.map((tab) => (
                     <div

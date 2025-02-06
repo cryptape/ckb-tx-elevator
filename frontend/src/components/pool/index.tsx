@@ -7,6 +7,7 @@ import { PendingLine } from "./pending-line";
 import { ProposalLine } from "./proposal-line";
 import { CommittingLine } from "./committing-line";
 import { CommittedLine } from "./committed-line";
+import { PoolHeader } from "./header";
 
 const Pool: FunctionalComponent = () => {
     const chainTheme = useAtomValue(chainThemeAtom);
@@ -46,9 +47,7 @@ const Pool: FunctionalComponent = () => {
                 }
             >
                 <div className="h-full flex flex-col relative align-center justify-center">
-                    <div>
-                        <img src="/assets/svg/factory-header.svg" alt="" />
-                    </div>
+                    <PoolHeader />
                     <div className="h-full flex flex-col relative align-center justify-start items-left">
                         <PendingLine txs={pendingTxs} title="Pending" />
                         <ProposalLine txs={proposedTxs} title="Proposal" />
