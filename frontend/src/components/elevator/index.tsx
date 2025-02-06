@@ -12,7 +12,7 @@ export interface ElevatorProp {
 
 export default function Elevator({ setIsNewBlock }: ElevatorProp) {
     const chainTheme = useAtomValue(chainThemeAtom);
-    const { chainService, waitForConnection } = useChainService();
+    const { chainService, waitForConnection, isConnected } = useChainService();
 
     const [tipBlock, setTipBlock] = useState<TipBlockResponse>(undefined);
 
@@ -44,11 +44,11 @@ export default function Elevator({ setIsNewBlock }: ElevatorProp) {
     };
     useEffect(() => {
         subNewBlock();
-    }, [chainTheme]);
+    }, [chainTheme, isConnected]);
 
     return (
         <div>
-            {tipBlock ? (
+            {tipBlock && chainService.wsClient.isConnected ? (
                 <ElevatorUI
                     block={tipBlock}
                     onDoorClosing={setDoorClosingAndIsNewBlock}

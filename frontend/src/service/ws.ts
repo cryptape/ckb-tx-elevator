@@ -92,10 +92,7 @@ export class WsApiService {
     }
 
     private attemptReconnect() {
-        if (
-            this.currentReconnectAttempt < this.reconnectAttempts &&
-            !this.reconnecting
-        ) {
+        if (this.currentReconnectAttempt < this.reconnectAttempts) {
             this.reconnecting = true;
             this.log(
                 "warn",
@@ -170,7 +167,7 @@ export class WsApiService {
     }
 
     send<T>(type: string, payload: T) {
-        if (!this.isConnected()) {
+        if (!this.isConnected) {
             this.log("warn", "WebSocket is not open, message not sent.");
             return;
         }
@@ -179,7 +176,7 @@ export class WsApiService {
         this.socket?.send(JSON.stringify(message));
     }
 
-    isConnected() {
+    get isConnected() {
         return this.socket?.readyState === WebSocket.OPEN;
     }
 
