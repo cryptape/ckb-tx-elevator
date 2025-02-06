@@ -99,7 +99,7 @@ export namespace TransactionType {
             case TransactionTypeEnum.dao:
                 return "#AAFAC8";
             case TransactionTypeEnum.rgbpp:
-                return "#B18FCF";
+                return "#65E3D8";
             case TransactionTypeEnum.other:
                 return "#B1AA8E";
 

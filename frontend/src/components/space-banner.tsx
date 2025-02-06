@@ -58,7 +58,7 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
                 </div>
 
                 {/* Forks */}
-                <div className="absolute top-10 left-60 opacity-80 animate-float animation-delay-500 group">
+                <div className="absolute top-10 left-60 opacity-80 animate-float animation-delay-500 group z-20">
                     <img
                         src="/assets/svg/space/forks.svg"
                         alt=""
@@ -67,7 +67,7 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
 
                     {/* 中央浮动说明文字 */}
                     <div
-                        className="z-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
                     opacity-0 invisible group-hover:opacity-100 group-hover:visible
                     transition-all duration-300
                     bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3
@@ -144,11 +144,11 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
                 <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-yellow-300 rounded-full animate-float animation-delay-1000" />
 
                 {/* mining machine */}
-                <div className="absolute top-32 left-20 animate-float animation-delay-500 group">
+                <div className="absolute top-32 left-20 animate-float animation-delay-500 group z-20">
                     <img src="/assets/svg/space/mining.svg" alt="" />
                     {/* 中央浮动说明文字 */}
                     <div
-                        className="z-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
                     opacity-0 invisible group-hover:opacity-100 group-hover:visible
                     transition-all duration-300
                     bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3
@@ -170,11 +170,11 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
                 </div>
 
                 {/* launch rocket */}
-                <div className="absolute bottom-20 left-1/2 rotate-[30deg] animate-float animation-delay-1500 group">
+                <div className="absolute bottom-20 left-1/2 rotate-[30deg] animate-float animation-delay-1500 group z-20">
                     <img src="/assets/svg/space/launch.svg" alt="" />
                     {/* 中央浮动说明文字 */}
                     <div
-                        className="z-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 
                     opacity-0 invisible group-hover:opacity-100 group-hover:visible
                     transition-all duration-300
                     bg-black/70 backdrop-blur-sm rounded-xl px-4 py-3
