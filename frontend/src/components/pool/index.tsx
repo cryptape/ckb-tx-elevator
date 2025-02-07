@@ -13,6 +13,8 @@ const Pool: FunctionalComponent = () => {
     const chainTheme = useAtomValue(chainThemeAtom);
     const { chainService, waitForConnection } = useChainService();
 
+    const [totalTxs, setTotalTxs] = useState(0);
+    const [totalTxSizes, setTotalTxSizes] = useState(0);
     const [proposedTxs, setProposedTxs] = useState([]);
     const [committedTxs, setCommittedTxs] = useState([]);
     const [pendingTxs, setPendingTxs] = useState([]);
@@ -32,6 +34,27 @@ const Pool: FunctionalComponent = () => {
             setProposingTxs(proposingTransactions);
             setProposedTxs(proposedTransactions);
             setCommittedTxs(tipCommittedTransactions);
+            setTotalTxs(
+                pendingTransactions.length +
+                    proposingTransactions.length +
+                    proposedTransactions.length +
+                    tipCommittedTransactions.length,
+            );
+            setTotalTxSizes(
+                pendingTransactions.reduce((acc, tx) => acc + +tx.size, 0) +
+                    proposingTransactions.reduce(
+                        (acc, tx) => acc + +tx.size,
+                        0,
+                    ) +
+                    proposedTransactions.reduce(
+                        (acc, tx) => acc + +tx.size,
+                        0,
+                    ) +
+                    tipCommittedTransactions.reduce(
+                        (acc, tx) => acc + +tx.size,
+                        0,
+                    ),
+            );
         });
     };
 
@@ -47,7 +70,10 @@ const Pool: FunctionalComponent = () => {
                 }
             >
                 <div className="h-full flex flex-col relative align-center justify-center">
-                    <PoolHeader />
+                    <PoolHeader
+                        totalTxSizesInBytes={totalTxSizes}
+                        totalTxs={totalTxs}
+                    />
                     <div className="h-full flex flex-col relative align-center justify-start items-left">
                         <PendingLine txs={pendingTxs} title="Pending" />
                         <ProposalLine txs={proposedTxs} title="Proposal" />

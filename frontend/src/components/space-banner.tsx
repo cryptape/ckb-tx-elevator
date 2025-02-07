@@ -1,22 +1,38 @@
 import { FunctionalComponent, h } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../states/atoms";
+import { useChainService } from "../context/chain";
 
 export interface SpaceBannerProps {
-    isNewBlock?: boolean;
+    isToTheMoon?: boolean;
 }
 
 export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
-    isNewBlock,
+    isToTheMoon,
 }) => {
     const chainTheme = useAtomValue(chainThemeAtom);
+    const { chainService } = useChainService();
 
-    const [avgBlockTime, setAvgBlockTime] = useState(7.91);
-    const [txPerMinute, setTxPerMinute] = useState(24.0);
-    const [avgFeeRate, setAvgFeeRate] = useState(1000);
-    const [epoch, setEpoch] = useState(11166);
-    const [epochProgress, setEpochProgress] = useState("997/1800");
+    const [avgBlockTime, setAvgBlockTime] = useState<number>();
+    const [avgFeeRate, setAvgFeeRate] = useState<number>();
+    const [difficulty, setDifficulty] = useState<number>();
+
+    const fetchData = async () => {
+        const chainStats = await chainService.getChainStats();
+        setAvgBlockTime(chainStats.averageBlockTime);
+        setAvgFeeRate(+chainStats.feeRate);
+        setDifficulty(
+            +parseFloat(
+                (
+                    +chainStats.chainInfo.difficulty / 10000000000000000
+                ).toString(),
+            ).toFixed(2),
+        );
+    };
+    useEffect(() => {
+        fetchData();
+    }, [chainTheme]);
 
     const borderBlack =
         chainTheme === ChainTheme.mainnet
@@ -26,9 +42,8 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
         chainTheme === ChainTheme.mainnet
             ? "text-brand-mainnet"
             : "text-brand-testnet";
-
-    const moonSize = isNewBlock === true ? "w-48 h-48" : "w-36 h-36";
-    const moonTop = isNewBlock === true ? "top-[-30px]" : "top-0";
+    const moonSize = isToTheMoon === true ? "w-48 h-48" : "w-36 h-36";
+    const moonTop = isToTheMoon === true ? "top-[-30px]" : "top-0";
     return (
         <div
             className={`relative h-[200px] bg-gradient-to-br from-surface-DEFAULT-inverse to-surface-hover-inverse flex flex-col md:flex-row items-center  border-2 ${borderBlack}`}
@@ -105,9 +120,9 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
             {/* 中间信息区域 */}
             <div className="flex-1 z-10 space-y-6 mb-8 pl-8 md:mb-0">
                 <h2
-                    className={`${isNewBlock ? "text-brand-accent" : textBrand} text-center`}
+                    className={`${isToTheMoon ? "text-brand-accent" : textBrand} text-center`}
                 >
-                    {isNewBlock
+                    {isToTheMoon
                         ? "To The Moon!"
                         : "Elevating Trust, Block by Block"}
                 </h2>
@@ -123,14 +138,14 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
                             <h4 class={"text-text-inverse"}>{avgFeeRate}</h4>
                             <div class={`text-text-inverse-secondary`}>
                                 {" "}
-                                s/kB
+                                FeeRate
                             </div>
                         </div>
                         <div class={"flex justify-start gap-2"}>
-                            <h4 class={"text-text-inverse"}>{epoch}</h4>
+                            <h4 class={"text-text-inverse"}>{difficulty} EH</h4>
                             <div class={`text-text-inverse-secondary`}>
                                 {" "}
-                                epoch
+                                difficulty
                             </div>
                         </div>
                     </div>

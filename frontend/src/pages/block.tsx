@@ -36,7 +36,7 @@ export const Block: FunctionalComponent = () => {
 
     return (
         <BaseLayout>
-            <SpaceBanner isNewBlock={false} />
+            <SpaceBanner isToTheMoon={false} />
             {block && <ElevatorUI block={block} />}
         </BaseLayout>
     );

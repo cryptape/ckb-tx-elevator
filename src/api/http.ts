@@ -1,12 +1,18 @@
 import type { Server } from "node:http";
 import type { Hex } from "@ckb-ccc/core";
+import type { ccc } from "@ckb-ccc/core";
 import cors from "cors";
 import express, { type Request, type Response, type Express } from "express";
 import { Config } from "../core/config";
 import type { DB } from "../db";
 import { logger } from "../util/logger";
+import { calcAverageBlockTime } from "../util/time";
+import type { PoolInfo } from "./type";
 
-export function createHttpServer(db: DB): {
+export function createHttpServer(
+    db: DB,
+    rpcClient: ccc.ClientJsonRpc,
+): {
     app: Express;
     start: (port: number) => Server;
 } {
@@ -104,6 +110,29 @@ export function createHttpServer(db: DB): {
             const tx = db.getTransactionByHash(txHash as Hex);
             res.json(tx);
         }
+    });
+
+    app.get("/chain-stats", async (_req: Request, res: Response) => {
+        const last20Blocks = db.getBlockHeaders("DESC", 20);
+        const times = last20Blocks.map((block) => block.timestamp);
+        const averageBlockTime = calcAverageBlockTime(times);
+        const [chainInfo, feeRate] = await Promise.all([
+            rpcClient.buildSender("get_blockchain_info", [])(),
+            rpcClient.buildSender("estimate_fee_rate", [])(),
+        ]);
+        res.json({
+            averageBlockTime,
+            chainInfo,
+            feeRate,
+        });
+    });
+
+    app.get("/pool-info", async (_req: Request, res: Response) => {
+        const poolInfo = (await rpcClient.buildSender(
+            "tx_pool_info",
+            [],
+        )()) as PoolInfo;
+        res.json(poolInfo);
     });
 
     app.get("/", (_req: Request, res: Response) => {

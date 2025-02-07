@@ -1,3 +1,4 @@
+import { ccc } from "@ckb-ccc/core";
 import { DB } from "../db";
 import { Config } from "./config";
 import { Subscriber } from "./subscriber";
@@ -29,4 +30,11 @@ export const testnetSubscriber = new Subscriber({
 export const mainnetSubscriber = new Subscriber({
     ckbRpcUrl: Config.mainnetWsRpcUrl,
     db: mainnetDB,
+});
+
+export const testnetRpcClient = new ccc.ClientPublicTestnet({
+    url: Config.testnetHttpRpcUrl,
+});
+export const mainnetRpcClient = new ccc.ClientPublicMainnet({
+    url: Config.mainnetHttpRpcUrl,
 });

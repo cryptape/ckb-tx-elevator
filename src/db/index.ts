@@ -549,6 +549,24 @@ export class DB {
         return stmt.all();
     }
 
+    getCommittedTransactions(order: "ASC" | "DESC" = "ASC", limit = 20) {
+        const stmt = this.db.prepare<[], DBTransaction>(`
+            SELECT * FROM transactions WHERE status = '${TransactionStatus.Committed}' ORDER BY id ${order} LIMIT ${limit}
+    	`);
+        return stmt.all();
+    }
+
+    getTransactionByType({
+        type,
+        order = "ASC",
+        limit = 20,
+    }: { type: TransactionTypeEnum; order?: "ASC" | "DESC"; limit?: number }) {
+        const stmt = this.db.prepare<[], DBTransaction>(`
+            SELECT * FROM transactions WHERE type = ${type} ORDER BY id ${order} LIMIT ${limit}
+        `);
+        return stmt.all();
+    }
+
     getPendingTransactions() {
         const stmt = this.db.prepare<[], DBTransaction>(`
 	        SELECT * FROM transactions WHERE status = '${TransactionStatus.Pending}'

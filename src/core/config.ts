@@ -39,5 +39,10 @@ export function extractAllowOriginList(value: string) {
                 return false;
             }
         });
+
+    if (list.find((v) => v === "*")) {
+        return "*";
+    }
+
     return list;
 }

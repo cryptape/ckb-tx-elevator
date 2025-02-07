@@ -4,7 +4,9 @@ import { WsApiService } from "./ws";
 import {
     BlockHeader,
     ChainSnapshot,
+    ChainStats,
     Network,
+    PoolInfo,
     TipBlockResponse,
     Transaction,
 } from "./type";
@@ -98,6 +100,16 @@ export class ChainService {
             `/all-block-headers?order=${order}&limit=${limit}`,
         );
         return response.data || [];
+    }
+
+    async getChainStats() {
+        const response = await this.httpClient.get<ChainStats>("/chain-stats");
+        return response.data;
+    }
+
+    async getPoolInfo() {
+        const response = await this.httpClient.get<PoolInfo>("/pool-info");
+        return response.data;
     }
 
     async subscribeNewSnapshot(onmessage: (_data: ChainSnapshot) => void) {
