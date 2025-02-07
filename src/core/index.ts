@@ -22,19 +22,21 @@ export const readonlyMainnetDB = new DB(
     },
 );
 
-export const testnetSubscriber = new Subscriber({
-    ckbRpcUrl: Config.testnetWsRpcUrl,
-    db: testnetDB,
-});
-
-export const mainnetSubscriber = new Subscriber({
-    ckbRpcUrl: Config.mainnetWsRpcUrl,
-    db: mainnetDB,
-});
-
 export const testnetRpcClient = new ccc.ClientPublicTestnet({
     url: Config.testnetHttpRpcUrl,
 });
 export const mainnetRpcClient = new ccc.ClientPublicMainnet({
     url: Config.mainnetHttpRpcUrl,
+});
+
+export const testnetSubscriber = new Subscriber({
+    ckbRpcUrl: Config.testnetWsRpcUrl,
+    db: testnetDB,
+    httpRpcClient: testnetRpcClient,
+});
+
+export const mainnetSubscriber = new Subscriber({
+    ckbRpcUrl: Config.mainnetWsRpcUrl,
+    db: mainnetDB,
+    httpRpcClient: mainnetRpcClient,
 });

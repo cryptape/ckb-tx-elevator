@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Hex } from "@ckb-ccc/core";
+import type { ClientJsonRpc, Hex } from "@ckb-ccc/core";
 import {
     type JsonRpcBlockHeader,
     type JsonRpcTransaction,
@@ -539,6 +539,56 @@ export class DB {
         }
 
         return this.saveCommittedBlockTransaction(tx, blockNumber, blockHash);
+    }
+
+    // only run this before the subscriber start
+    async cleanOrphanedTransaction(rpcClient: ClientJsonRpc) {
+        logger.debug("Cleaning orphaned transactions...");
+        const orphanedTxs = [
+            ...this.getPendingTransactions(),
+            ...this.getProposingTransactions(),
+            ...this.getProposedTransactions(),
+        ];
+
+        for (const tx of orphanedTxs) {
+            const res = await rpcClient.getTransaction(tx.tx_hash);
+            if (res && res.status === "committed") {
+                const block = await rpcClient.getBlockByHash(
+                    res.blockHash as string,
+                );
+                if (block) {
+                    const blockNumber =
+                        `0x${block.header.number.toString(16)}` as Hex;
+                    const timestamp = +block.header.timestamp.toString(10);
+                    this.updateCommittedTransaction(
+                        JsonRpcTransformers.transactionFrom(res.transaction),
+                        blockNumber,
+                        block.header.hash,
+                        timestamp,
+                    );
+                }
+            }
+
+            if (!res) {
+                this.db
+                    .prepare("DELETE FROM transactions WHERE tx_hash = ?")
+                    .run(tx.tx_hash);
+            }
+
+            if (res && res.status === "unknown") {
+                this.db
+                    .prepare("DELETE FROM transactions WHERE tx_hash = ?")
+                    .run(tx.tx_hash);
+            }
+
+            if (res && res.status === "rejected") {
+                this.db
+                    .prepare("DELETE FROM transactions WHERE tx_hash = ?")
+                    .run(tx.tx_hash);
+            }
+        }
+
+        logger.debug(`Cleaned ${orphanedTxs.length} orphaned transactions.`);
     }
 
     listAllTransactions() {
