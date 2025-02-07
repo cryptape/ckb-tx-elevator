@@ -40,7 +40,10 @@ export const ElevatorUI: FunctionalComponent<ElevatorUIProp> = ({
             }
         >
             <div className={"w-1/5 self-end"}>
-                <ElevatorMiner doorClosing={isDoorClosing} />
+                <ElevatorMiner
+                    difficultyInHex={block.blockHeader.compact_target}
+                    doorClosing={isDoorClosing}
+                />
             </div>
 
             <div>

@@ -132,9 +132,18 @@ export interface Transaction {
 }
 
 export interface BlockHeader {
+    compact_target: Hex;
+    dao: Hex;
+    epoch: Hex;
+    extra_hash: Hex;
     block_hash: Hex;
-    block_number: string;
-    // Add other block header fields as needed
+    nonce: Hex;
+    block_number: Hex;
+    parent_hash: Hex;
+    proposals_hash: Hex;
+    timestamp: number;
+    transactions_root: Hex;
+    version: Hex;
 }
 
 export interface TipBlockResponse {
