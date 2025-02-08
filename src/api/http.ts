@@ -1,4 +1,5 @@
 import type { Server } from "node:http";
+import { env } from "node:process";
 import type { Hex } from "@ckb-ccc/core";
 import { ccc } from "@ckb-ccc/core";
 import cors from "cors";
@@ -19,13 +20,15 @@ export function createHttpServer(
 } {
     const app = express();
 
-    app.use(
-        cors({
-            origin: Config.allowOrigin,
-            methods: "GET, POST, PUT, DELETE",
-            allowedHeaders: "Content-Type",
-        }),
-    );
+    if (env.NODE_ENV !== "production") {
+        app.use(
+            cors({
+                origin: Config.allowOrigin,
+                methods: "GET, POST, PUT, DELETE",
+                allowedHeaders: "Content-Type",
+            }),
+        );
+    }
 
     app.get("/pending-txs", async (_req: Request, res: Response) => {
         const transactions = db.getPendingTransactions();
