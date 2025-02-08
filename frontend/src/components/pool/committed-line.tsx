@@ -9,7 +9,7 @@ import {
 import { FunctionalComponent, JSX } from "preact";
 import { transactionSquareSize } from "../elevator/util";
 import { useAtomValue } from "jotai";
-import { chainThemeAtom } from "../../states/atoms";
+import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
 
 export interface CommittedLineProps {
@@ -125,6 +125,11 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
         createScene();
     }, [txs[0]?.proposed_at_block_number]);
 
+    const holeSvg =
+        chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/pool/mainnet/hole.svg"
+            : "/assets/svg/pool/testnet/hole.svg";
+
     return (
         <div className={"h-full"}>
             <div
@@ -134,7 +139,7 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
                     <div
                         className={`absolute bottom-20 left-0 z-0 pointer-events-none flex justify-center items-center`}
                     >
-                        <img src="/assets/svg/pool-ground.svg" alt="" />
+                        <img src={holeSvg} alt="" />
                     </div>
                     <canvas className={`z-2 relative`} ref={canvasRef} />
                     {/* Transaction Box Tooltip 层 */}

@@ -7,6 +7,14 @@ export interface WebSocketMessage<T> {
 
 export type WebSocketMessageHandler<T> = (message: WebSocketMessage<T>) => void;
 
+export enum WebSocketConnectionState {
+    CONNECTING = "CONNECTING",
+    OPEN = "OPEN",
+    CLOSING = "CLOSING",
+    CLOSED = "CLOSED",
+    UNKNOWN = "UNKNOWN",
+}
+
 export interface WebSocketServiceOptions {
     url?: string;
     reconnectInterval?: number; // 毫秒，默认 3000
@@ -84,10 +92,7 @@ export class WsApiService {
     }
 
     private attemptReconnect() {
-        if (
-            this.currentReconnectAttempt < this.reconnectAttempts &&
-            !this.reconnecting
-        ) {
+        if (this.currentReconnectAttempt < this.reconnectAttempts) {
             this.reconnecting = true;
             this.log(
                 "warn",
@@ -162,7 +167,7 @@ export class WsApiService {
     }
 
     send<T>(type: string, payload: T) {
-        if (!this.isConnected()) {
+        if (!this.isConnected) {
             this.log("warn", "WebSocket is not open, message not sent.");
             return;
         }
@@ -171,8 +176,23 @@ export class WsApiService {
         this.socket?.send(JSON.stringify(message));
     }
 
-    isConnected() {
+    get isConnected() {
         return this.socket?.readyState === WebSocket.OPEN;
+    }
+
+    get connectionState(): WebSocketConnectionState {
+        switch (this.socket?.readyState) {
+            case WebSocket.CONNECTING:
+                return WebSocketConnectionState.CONNECTING;
+            case WebSocket.OPEN:
+                return WebSocketConnectionState.OPEN;
+            case WebSocket.CLOSING:
+                return WebSocketConnectionState.CLOSING;
+            case WebSocket.CLOSED:
+                return WebSocketConnectionState.CLOSED;
+            default:
+                return WebSocketConnectionState.UNKNOWN;
+        }
     }
 
     private handleMessage(message: WebSocketMessage<any>) {

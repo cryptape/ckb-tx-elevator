@@ -109,8 +109,7 @@ export default {
                         shadow: "#8D8B71",
                     },
                     rgb: {
-                        DEFAULT:
-                            "linear-gradient(104deg, #FF5846 0.83%, #66EF9A 50.83%, #87C1FF 100.83%)",
+                        DEFAULT: "#65E3D8",
                         shadow: "#E7E7E7",
                     },
                     tape: {

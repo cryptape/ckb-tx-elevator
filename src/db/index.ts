@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Hex } from "@ckb-ccc/core";
+import type { ClientJsonRpc, Hex } from "@ckb-ccc/core";
 import {
     type JsonRpcBlockHeader,
     type JsonRpcTransaction,
@@ -21,6 +21,8 @@ import {
     type ChainSnapshot,
     type DBBlockHeader,
     type DBId,
+    type DBOutput,
+    type DBScript,
     type DBTransaction,
     DepType,
     HashType,
@@ -356,9 +358,10 @@ export class DB {
         const txSize: Hex = `0x${calcTxSize(tx).toString(16)}`;
 
         if (isCellBaseTx(tx)) {
-            // CellBase tx is a special case that we don't save the relatedData like inputs and outputs
+            // CellBase tx is a special case that some related data might be saving failed.
             logger.debug(`Saving CellBase tx: ${txView.hash}`);
-            return txStmt.run(
+
+            const result = txStmt.run(
                 txView.hash,
                 type,
                 txView.version,
@@ -369,6 +372,9 @@ export class DB {
                 blockNumber,
                 blockHash,
             );
+            const txId = result.lastInsertRowid;
+            this.saveTransactionRelatedData(txView, txId);
+            return;
         }
 
         // Save normal transaction
@@ -541,11 +547,79 @@ export class DB {
         return this.saveCommittedBlockTransaction(tx, blockNumber, blockHash);
     }
 
+    // only run this before the subscriber start
+    async cleanOrphanedTransaction(rpcClient: ClientJsonRpc) {
+        logger.debug("Cleaning orphaned transactions...");
+        const orphanedTxs = [
+            ...this.getPendingTransactions(),
+            ...this.getProposingTransactions(),
+            ...this.getProposedTransactions(),
+        ];
+
+        for (const tx of orphanedTxs) {
+            const res = await rpcClient.getTransaction(tx.tx_hash);
+            if (res && res.status === "committed") {
+                const block = await rpcClient.getBlockByHash(
+                    res.blockHash as string,
+                );
+                if (block) {
+                    const blockNumber =
+                        `0x${block.header.number.toString(16)}` as Hex;
+                    const timestamp = +block.header.timestamp.toString(10);
+                    this.updateCommittedTransaction(
+                        JsonRpcTransformers.transactionFrom(res.transaction),
+                        blockNumber,
+                        block.header.hash,
+                        timestamp,
+                    );
+                }
+            }
+
+            if (!res) {
+                this.db
+                    .prepare("DELETE FROM transactions WHERE tx_hash = ?")
+                    .run(tx.tx_hash);
+            }
+
+            if (res && res.status === "unknown") {
+                this.db
+                    .prepare("DELETE FROM transactions WHERE tx_hash = ?")
+                    .run(tx.tx_hash);
+            }
+
+            if (res && res.status === "rejected") {
+                this.db
+                    .prepare("DELETE FROM transactions WHERE tx_hash = ?")
+                    .run(tx.tx_hash);
+            }
+        }
+
+        logger.debug(`Cleaned ${orphanedTxs.length} orphaned transactions.`);
+    }
+
     listAllTransactions() {
         const stmt = this.db.prepare<[], DBTransaction>(`
 	        SELECT * FROM transactions
 	    `);
 
+        return stmt.all();
+    }
+
+    getCommittedTransactions(order: "ASC" | "DESC" = "ASC", limit = 20) {
+        const stmt = this.db.prepare<[], DBTransaction>(`
+            SELECT * FROM transactions WHERE status = '${TransactionStatus.Committed}' ORDER BY id ${order} LIMIT ${limit}
+    	`);
+        return stmt.all();
+    }
+
+    getTransactionByType({
+        type,
+        order = "ASC",
+        limit = 20,
+    }: { type: TransactionTypeEnum; order?: "ASC" | "DESC"; limit?: number }) {
+        const stmt = this.db.prepare<[], DBTransaction>(`
+            SELECT * FROM transactions WHERE type = ${type} ORDER BY id ${order} LIMIT ${limit}
+        `);
         return stmt.all();
     }
 
@@ -666,6 +740,38 @@ export class DB {
             proposingTransactions,
             proposedTransactions,
         };
+    }
+
+    getCellOutputByTxHash(txHash: Hex) {
+        const id = this.getTransactionByHash(txHash)?.id;
+        if (id == null) return [];
+
+        const stmt = this.db.prepare<[number], DBOutput>(`
+            SELECT * FROM output WHERE transaction_id = ? 
+        `);
+        return stmt.all(+id.toString());
+    }
+
+    getScriptById(scriptId: DBId) {
+        const stmt = this.db.prepare<[], DBScript>(`
+            SELECT * FROM script WHERE id = ${scriptId}
+        `);
+        return stmt.get();
+    }
+
+    getMinerInfo(cellbaseTxHash: Hex) {
+        const cellOutputs = this.getCellOutputByTxHash(cellbaseTxHash);
+        if (cellOutputs.length > 0) {
+            const minerLockScript = this.getScriptById(
+                cellOutputs[0].lock_script_id,
+            );
+            const minerAward = cellOutputs[0].capacity;
+            return {
+                lockScript: minerLockScript,
+                award: minerAward,
+            };
+        }
+        return null;
     }
 
     close(): void {

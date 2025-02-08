@@ -11,7 +11,7 @@ export function Home() {
 
     return (
         <BaseLayout>
-            <SpaceBanner isNewBlock={isNewBlock} />
+            <SpaceBanner isToTheMoon={isNewBlock} />
             <Switcher
                 front={
                     <>

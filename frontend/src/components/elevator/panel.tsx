@@ -1,17 +1,22 @@
 import { useAtomValue } from "jotai";
 import { FunctionComponent } from "preact";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import { Hex } from "@ckb-ccc/core";
+import { useState } from "preact/hooks";
+import BlockModal from "./block-modal";
 
 interface Props {
     transactionNumber: number;
     sizeBytes: number;
     occupationPercentage: number;
+    blockHash: Hex;
 }
 
 const ElevatorPanel: FunctionComponent<Props> = ({
     transactionNumber,
     sizeBytes,
     occupationPercentage,
+    blockHash,
 }) => {
     const chainTheme = useAtomValue(chainThemeAtom);
     const bgBrand =
@@ -22,39 +27,59 @@ const ElevatorPanel: FunctionComponent<Props> = ({
         chainTheme === ChainTheme.mainnet
             ? "hover:bg-brand-mainnet-hover"
             : "hover:bg-brand-testnet-hover";
+
+    const [showModal, setShowModal] = useState(false);
+    const openModal = () => setShowModal(true);
+    const closeModal = () => setShowModal(false);
+
     return (
         <div
-            className={`bg-surface-DEFAULT-inverse rounded-md p-4 w-fit text-white`}
+            className={`bg-surface-DEFAULT-inverse rounded-md w-fit text-white overflow-hidden`}
         >
-            <div>
-                <div className="text-text-inverse-secondary">Transaction #</div>
+            <div className={"p-4"}>
                 <div>
-                    <h3 className={`font-dseg-classic text-text-inverse`}>
-                        {transactionNumber}
-                    </h3>
+                    <div className="text-text-inverse-secondary">
+                        Transaction #
+                    </div>
+                    <div>
+                        <h3 className={`font-dseg-classic text-text-inverse`}>
+                            {transactionNumber}
+                        </h3>
+                    </div>
+                </div>
+                <div className="mt-4">
+                    <div className="text-text-inverse-secondary">
+                        Size (Bytes)
+                    </div>
+                    <div>
+                        <h3 className={`font-dseg-classic text-text-inverse`}>
+                            {sizeBytes.toLocaleString()}
+                        </h3>
+                    </div>
+                </div>
+                <div className="mt-4">
+                    <div className="text-text-inverse-secondary">
+                        Occupation
+                    </div>
+                    <div>
+                        <h3 className={`font-dseg-classic text-text-inverse`}>
+                            {occupationPercentage}
+                        </h3>
+                    </div>
                 </div>
             </div>
-            <div className="mt-4">
-                <div className="text-text-inverse-secondary">Size (Bytes)</div>
-                <div>
-                    <h3 className={`font-dseg-classic text-text-inverse`}>
-                        {sizeBytes.toLocaleString()}
-                    </h3>
-                </div>
-            </div>
-            <div className="mt-4">
-                <div className="text-text-inverse-secondary">Occupation</div>
-                <div>
-                    <h3 className={`font-dseg-classic text-text-inverse`}>
-                        {occupationPercentage}
-                    </h3>
-                </div>
-            </div>
-            <button
-                className={`mt-4 ${bgBrand} py-2 px-4 rounded-md ${bgBrandHover} text-text-inverse`}
+
+            <div
+                className={`mt-4 ${bgBrand} flex justify-center ${bgBrandHover} text-text-inverse`}
             >
-                View more
-            </button>
+                <button className={"px-4 py-2"} onClick={openModal}>
+                    View more
+                </button>
+            </div>
+
+            {showModal && (
+                <BlockModal blockHash={blockHash} onClose={closeModal} />
+            )}
         </div>
     );
 };

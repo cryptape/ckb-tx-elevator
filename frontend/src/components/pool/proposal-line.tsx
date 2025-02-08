@@ -9,8 +9,9 @@ import {
 import { FunctionalComponent, JSX } from "preact";
 import { transactionSquareSize } from "../elevator/util";
 import { useAtomValue } from "jotai";
-import { chainThemeAtom } from "../../states/atoms";
+import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
+import { SignBoard } from "./signboard";
 
 export interface ProposalLineProps {
     title: string;
@@ -61,7 +62,7 @@ export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
     }
 
     function createScene() {
-        const width = 800;
+        const width = 1200;
         const height = 300;
 
         let Engine = Matter.Engine;
@@ -198,39 +199,40 @@ export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
         Matter.Composite.add(engineRef.current.world, boxes);
     };
 
+    const borderColor =
+        chainTheme === ChainTheme.mainnet
+            ? "border-brand-mainnet"
+            : "border-brand-testnet";
+    const minerLeft =
+        chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/pool/mainnet/miner-left.svg"
+            : "/assets/svg/pool/testnet/miner-left.svg";
     return (
-        <div>
-            <div
-                className={`flex justify-end items-center border-b-4 border-brand-mainnet`}
-            >
-                <div className={"h-[300px] flex items-end"}>
-                    <img src="/assets/svg/second-line-left.svg" alt="" />
-                </div>
-                <div className={"relative"} ref={containerRef}>
-                    <canvas ref={canvasRef} />
-                    {/* Transaction Box Tooltip 层 */}
-                    {tooltipContent && tooltipPosition && (
-                        <div
-                            className="absolute z-50 p-2 bg-gray-800 text-white rounded-md text-sm whitespace-pre"
-                            style={{
-                                left: `${tooltipPosition.x + 15}px`,
-                                top: `${tooltipPosition.y}px`,
-                                transform: "translateY(-50%)",
-                            }}
-                        >
-                            {tooltipContent}
-                        </div>
-                    )}
-                </div>
-                <div
-                    className={
-                        "w-[250px] h-[300px] bg-brand-mainnet border-2 border-brand-mainnet min-h-full flex justify-center items-center"
-                    }
-                >
-                    <div className={"text-text-inverse"}>
-                        {title} Transactions
+        <div
+            className={`relative w-full flex justify-end border-b-8 border-r-8 pt-[100px] ${borderColor}`}
+        >
+            <div className={"h-[300px] flex items-end"}>
+                <img src={minerLeft} alt="" />
+            </div>
+            <div className={"relative"} ref={containerRef}>
+                <canvas ref={canvasRef} />
+                {/* Transaction Box Tooltip 层 */}
+                {tooltipContent && tooltipPosition && (
+                    <div
+                        className="absolute z-50 p-2 bg-gray-800 text-white rounded-md text-sm whitespace-pre"
+                        style={{
+                            left: `${tooltipPosition.x + 15}px`,
+                            top: `${tooltipPosition.y}px`,
+                            transform: "translateY(-50%)",
+                        }}
+                    >
+                        {tooltipContent}
                     </div>
-                </div>
+                )}
+            </div>
+
+            <div className={"absolute top-0 left-1/2 -translate-x-1/2"}>
+                <SignBoard title={title} count={txs.length} />
             </div>
         </div>
     );

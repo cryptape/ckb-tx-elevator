@@ -1,11 +1,19 @@
 import { createHttpServer } from "./api/http";
 import { createWsServer } from "./api/ws";
-import { readonlyMainnetDB, readonlyTestnetDB } from "./core";
+import {
+    mainnetRpcClient,
+    readonlyMainnetDB,
+    readonlyTestnetDB,
+    testnetRpcClient,
+} from "./core";
 import { Config } from "./core/config";
 import { Network } from "./core/type";
 
 export async function runServer() {
-    const testnetHttpSever = createHttpServer(readonlyTestnetDB);
+    const testnetHttpSever = createHttpServer(
+        readonlyTestnetDB,
+        testnetRpcClient,
+    );
     const server = testnetHttpSever.start(Config.apiTestnetPort);
     const testnetWsServer = createWsServer(
         server,
@@ -14,7 +22,10 @@ export async function runServer() {
     );
     testnetWsServer.start();
 
-    const mainnetHttpServer = createHttpServer(readonlyMainnetDB);
+    const mainnetHttpServer = createHttpServer(
+        readonlyMainnetDB,
+        mainnetRpcClient,
+    );
     const mainnetServer = mainnetHttpServer.start(Config.apiMainnetPort);
     const mainnetWsServer = createWsServer(
         mainnetServer,

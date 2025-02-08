@@ -10,7 +10,9 @@ import { FunctionalComponent, JSX } from "preact";
 import { transactionSquareSize } from "../elevator/util";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
 import { useAtomValue } from "jotai";
-import { chainThemeAtom } from "../../states/atoms";
+import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import { SignBoard } from "./signboard";
+import Bulb from "./bulb";
 
 export interface PendingLineProps {
     title: string;
@@ -61,7 +63,7 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
     }
 
     function createScene() {
-        const width = 800;
+        const width = 900;
         const height = 300;
 
         let Engine = Matter.Engine;
@@ -198,21 +200,55 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
         Matter.Composite.add(engineRef.current.world, boxes);
     };
 
+    const bgColor =
+        chainTheme === ChainTheme.mainnet
+            ? "bg-brand-mainnet"
+            : "bg-brand-testnet";
+    const borderColor =
+        chainTheme === ChainTheme.mainnet
+            ? "border-brand-mainnet"
+            : "border-brand-testnet";
+    const pipeSvg =
+        chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/pool/mainnet/pipe.svg"
+            : "/assets/svg/pool/testnet/pipe.svg";
+    const ystandSvg =
+        chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/pool/mainnet/ystand.svg"
+            : "/assets/svg/pool/testnet/ystand.svg";
+    const minerRight =
+        chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/pool/mainnet/miner-right.svg"
+            : "/assets/svg/pool/testnet/miner-right.svg";
     return (
         <div>
             <div
-                className={`flex justify-start items-baseline border-b-4 border-brand-mainnet`}
+                className={`relative flex justify-start items-end border-b-8 ${borderColor}`}
             >
                 <div>
-                    <img src="/assets/svg/line-left-start.svg" alt="" />
+                    <img src={pipeSvg} alt="" />
                 </div>
-                <div className={"relative"}>
+                <div className={"flex flex-col justify-center h-fit"}>
                     <div
-                        className={"absolute bottom-6 left-8 text-text-inverse"}
+                        className={
+                            "flex flex-col justify-center align-center items-center"
+                        }
                     >
-                        {title} Transactions
+                        <img src={ystandSvg} alt="" />
+                        <div>
+                            <img src="/assets/svg/pool/stand-shim.svg" alt="" />
+                        </div>
                     </div>
-                    <img src="/assets/svg/line-left.svg" alt="" />
+                    <div
+                        className={`text-text-inverse ${bgColor} w-[240px] h-[230px] border-[2px] border-text-secondary flex justify-center gap-2 p-4`}
+                    >
+                        <Bulb bulbColor="bg-functional-warning" isOn={true} />
+                        <Bulb bulbColor="bg-functional-success" isOn={true} />
+                        <Bulb />
+                    </div>
+                </div>
+                <div className={"absolute top-0 left-1/2 -translate-x-1/2"}>
+                    <SignBoard title={title} count={txs.length} />
                 </div>
                 <div className={"relative"} ref={containerRef}>
                     <canvas ref={canvasRef} />
@@ -231,7 +267,7 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
                     )}
                 </div>
                 <div>
-                    <img src="/assets/svg/line-right.svg" alt="" />
+                    <img src={minerRight} alt="" />
                 </div>
             </div>
         </div>

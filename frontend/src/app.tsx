@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "./states/atoms";
 import { Network } from "./service/type";
 import { useMemo } from "preact/hooks";
+import { Block } from "./pages/block";
 
 const App = () => {
     const chainTheme = useAtomValue(chainThemeAtom);
@@ -17,6 +18,7 @@ const App = () => {
         <ChainProvider network={network}>
             <main class={"flex flex-col justify-center bg-surface-DEFAULT-01"}>
                 <Switch>
+                    <Route path="/replay/:block_hash" component={Block} />
                     <Route path="/" component={Home} />
                 </Switch>
             </main>

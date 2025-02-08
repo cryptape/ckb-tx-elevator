@@ -3,8 +3,11 @@ import { Hex } from "@ckb-ccc/core";
 import { WsApiService } from "./ws";
 import {
     BlockHeader,
+    BlockResponse,
     ChainSnapshot,
+    ChainStats,
     Network,
+    PoolInfo,
     TipBlockResponse,
     Transaction,
 } from "./type";
@@ -78,6 +81,13 @@ export class ChainService {
         return response.data || null;
     }
 
+    async getBlock(blockHash: Hex): Promise<BlockResponse | null> {
+        const response = await this.httpClient.get<BlockResponse>(
+            `/block?blockHash=${blockHash}`,
+        );
+        return response.data;
+    }
+
     async getTipBlockHeader(): Promise<BlockHeader | null> {
         const response =
             await this.httpClient.get<BlockHeader>("/tip-block-header");
@@ -98,6 +108,16 @@ export class ChainService {
             `/all-block-headers?order=${order}&limit=${limit}`,
         );
         return response.data || [];
+    }
+
+    async getChainStats() {
+        const response = await this.httpClient.get<ChainStats>("/chain-stats");
+        return response.data;
+    }
+
+    async getPoolInfo() {
+        const response = await this.httpClient.get<PoolInfo>("/pool-info");
+        return response.data;
     }
 
     async subscribeNewSnapshot(onmessage: (_data: ChainSnapshot) => void) {

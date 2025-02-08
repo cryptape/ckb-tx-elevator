@@ -1,3 +1,4 @@
+import type { ClientJsonRpc } from "@ckb-ccc/core";
 import {
     type JsonRpcBlock,
     JsonRpcTransformers,
@@ -7,6 +8,7 @@ import type { DB } from "../db";
 import { logger } from "../util/logger";
 import type {
     JsonRpcPoolTransactionEntry,
+    Network,
     PoolTransactionReject,
 } from "./type";
 
@@ -20,12 +22,17 @@ export interface WebsocketTopicSubscriber {
 
 export class Subscriber {
     ckbRpcUrl: string;
-    private ws: WebSocket;
+    private ws: WebSocket | undefined;
+    private httpRpcClient: ClientJsonRpc;
     private db: DB;
 
-    constructor({ ckbRpcUrl, db }: { ckbRpcUrl: string; db: DB }) {
+    constructor({
+        ckbRpcUrl,
+        db,
+        httpRpcClient,
+    }: { httpRpcClient: ClientJsonRpc; ckbRpcUrl: string; db: DB }) {
         this.ckbRpcUrl = ckbRpcUrl;
-        this.ws = new WebSocket(this.ckbRpcUrl);
+        this.httpRpcClient = httpRpcClient;
         this.db = db;
     }
 
@@ -111,12 +118,15 @@ export class Subscriber {
         return topics;
     }
 
-    run() {
+    async run() {
+        await this.db.cleanOrphanedTransaction(this.httpRpcClient);
+
+        this.ws = new WebSocket(this.ckbRpcUrl);
         const topics = this.createTopicSubscriber();
         this.ws.on("open", () => {
             logger.info(`Connected to CKB node ${this.ckbRpcUrl}`);
             for (const topic of topics) {
-                this.ws.send(
+                this.ws?.send(
                     JSON.stringify({
                         id: topic.id,
                         jsonrpc: "2.0",

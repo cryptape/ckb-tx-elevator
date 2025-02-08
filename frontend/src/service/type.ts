@@ -99,7 +99,7 @@ export namespace TransactionType {
             case TransactionTypeEnum.dao:
                 return "#AAFAC8";
             case TransactionTypeEnum.rgbpp:
-                return "#B18FCF";
+                return "#65E3D8";
             case TransactionTypeEnum.other:
                 return "#B1AA8E";
 
@@ -132,9 +132,18 @@ export interface Transaction {
 }
 
 export interface BlockHeader {
+    compact_target: Hex;
+    dao: Hex;
+    epoch: Hex;
+    extra_hash: Hex;
     block_hash: Hex;
-    block_number: string;
-    // Add other block header fields as needed
+    nonce: Hex;
+    block_number: Hex;
+    parent_hash: Hex;
+    proposals_hash: Hex;
+    timestamp: number;
+    transactions_root: Hex;
+    version: Hex;
 }
 
 export interface TipBlockResponse {
@@ -143,9 +152,64 @@ export interface TipBlockResponse {
     proposedTransactions: Transaction[];
 }
 
+export interface BlockResponse {
+    blockHeader: BlockHeader;
+    transactions: Transaction[];
+    proposalTransactions: Transaction[];
+    miner: MinerInfo;
+}
+
+export interface MinerInfo {
+    address?: string;
+    lockScript?: DBScript;
+    award?: Hex;
+}
+
+export interface DBScript {
+    code_hash: Hex;
+    hash_type: HashType;
+    args: Hex;
+}
+
+export enum HashType {
+    Data = 0,
+    Type = 1,
+    Data1 = 2,
+    Data2 = 4,
+}
+
 export interface ChainSnapshot {
     tipCommittedTransactions: Transaction[];
     pendingTransactions: Transaction[];
     proposingTransactions: Transaction[];
     proposedTransactions: Transaction[];
+}
+
+export interface ChainStats {
+    averageBlockTime: number;
+    chainInfo: {
+        alerts: Array<string>;
+        chain: string;
+        difficulty: Hex;
+        epoch: Hex;
+        is_initial_block_download: boolean;
+        median_time: Hex;
+    };
+    feeRate: Hex;
+}
+
+export interface PoolInfo {
+    last_txs_updated_at: Hex;
+    max_tx_pool_size: Hex;
+    min_fee_rate: Hex;
+    min_rbf_rate: Hex;
+    orphan: Hex;
+    pending: Hex;
+    proposed: Hex;
+    tip_hash: Hex;
+    tip_number: Hex;
+    total_tx_cycles: Hex;
+    total_tx_size: Hex;
+    tx_size_limit: Hex;
+    verify_queue_size: Hex;
 }
