@@ -261,7 +261,7 @@ const BlockModal: preact.FunctionComponent<BlockModalProps> = ({
                     </button>
                     <a
                         href={createBlockLink(
-                            blockHash,
+                            block?.blockHeader.block_hash ?? "",
                             chainTheme === ChainTheme.mainnet
                                 ? Network.Mainnet
                                 : Network.Testnet,
