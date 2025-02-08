@@ -21,6 +21,8 @@ import {
     type ChainSnapshot,
     type DBBlockHeader,
     type DBId,
+    type DBOutput,
+    type DBScript,
     type DBTransaction,
     DepType,
     HashType,
@@ -356,9 +358,10 @@ export class DB {
         const txSize: Hex = `0x${calcTxSize(tx).toString(16)}`;
 
         if (isCellBaseTx(tx)) {
-            // CellBase tx is a special case that we don't save the relatedData like inputs and outputs
+            // CellBase tx is a special case that some related data might be saving failed.
             logger.debug(`Saving CellBase tx: ${txView.hash}`);
-            return txStmt.run(
+
+            const result = txStmt.run(
                 txView.hash,
                 type,
                 txView.version,
@@ -369,6 +372,9 @@ export class DB {
                 blockNumber,
                 blockHash,
             );
+            const txId = result.lastInsertRowid;
+            this.saveTransactionRelatedData(txView, txId);
+            return;
         }
 
         // Save normal transaction
@@ -734,6 +740,38 @@ export class DB {
             proposingTransactions,
             proposedTransactions,
         };
+    }
+
+    getCellOutputByTxHash(txHash: Hex) {
+        const id = this.getTransactionByHash(txHash)?.id;
+        if (id == null) return [];
+
+        const stmt = this.db.prepare<[number], DBOutput>(`
+            SELECT * FROM output WHERE transaction_id = ? 
+        `);
+        return stmt.all(+id.toString());
+    }
+
+    getScriptById(scriptId: DBId) {
+        const stmt = this.db.prepare<[], DBScript>(`
+            SELECT * FROM script WHERE id = ${scriptId}
+        `);
+        return stmt.get();
+    }
+
+    getMinerInfo(cellbaseTxHash: Hex) {
+        const cellOutputs = this.getCellOutputByTxHash(cellbaseTxHash);
+        if (cellOutputs.length > 0) {
+            const minerLockScript = this.getScriptById(
+                cellOutputs[0].lock_script_id,
+            );
+            const minerAward = cellOutputs[0].capacity;
+            return {
+                lockScript: minerLockScript,
+                award: minerAward,
+            };
+        }
+        return null;
     }
 
     close(): void {

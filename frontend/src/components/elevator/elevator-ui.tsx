@@ -7,6 +7,7 @@ import { TipBlockResponse } from "../../service/type";
 import { useAtomValue } from "jotai";
 import { chainThemeAtom, ChainTheme } from "../../states/atoms";
 import { useState } from "preact/hooks";
+import BlockModal from "./block-modal";
 
 export interface ElevatorUIProp {
     block: TipBlockResponse;

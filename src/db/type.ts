@@ -51,6 +51,22 @@ export interface DBTransaction {
     timestamp: number; // DATETIME DEFAULT CURRENT_TIMESTAMP, optional
 }
 
+export interface DBOutput {
+    id: DBId;
+    transaction_id: DBId;
+    capacity: Hex;
+    lock_script_id: DBId;
+    type_script_id?: DBId;
+    o_data: Hex;
+}
+
+export interface DBScript {
+    id: DBId;
+    code_hash: Hex;
+    hash_type: HashType;
+    args: Hex;
+}
+
 export interface TransactionSnapshot {
     timestamp: number; // last modify time
     txHash: string;

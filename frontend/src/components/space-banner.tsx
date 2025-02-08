@@ -25,7 +25,7 @@ export const SpaceBanner: FunctionalComponent<SpaceBannerProps> = ({
         setDifficulty(
             +parseFloat(
                 (
-                    +chainStats.chainInfo.difficulty / 10000000000000000
+                    +chainStats.chainInfo.difficulty / 1000000000000000000
                 ).toString(),
             ).toFixed(2),
         );

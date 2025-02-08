@@ -1,13 +1,14 @@
 import type { Server } from "node:http";
 import type { Hex } from "@ckb-ccc/core";
-import type { ccc } from "@ckb-ccc/core";
+import { ccc } from "@ckb-ccc/core";
 import cors from "cors";
 import express, { type Request, type Response, type Express } from "express";
 import { Config } from "../core/config";
 import type { DB } from "../db";
+import { TransactionTypeEnum } from "../db/type";
 import { logger } from "../util/logger";
 import { calcAverageBlockTime } from "../util/time";
-import type { PoolInfo } from "./type";
+import type { MinerInfo, PoolInfo } from "./type";
 
 export function createHttpServer(
     db: DB,
@@ -62,6 +63,46 @@ export function createHttpServer(
         const blockHash = req.query.blockHash as Hex;
         const blockHeader = db.getBlockHeaderByHash(blockHash);
         res.json(blockHeader);
+    });
+
+    app.get("/block", async (req: Request, res: Response) => {
+        const blockHash = req.query.blockHash as Hex;
+        const blockHeader = db.getBlockHeaderByHash(blockHash);
+        const transactions = db.getCommittedTransactionsByBlock(blockHash);
+        const proposalTransactions =
+            db.getProposedTransactionsByBlock(blockHash);
+
+        const miner: MinerInfo = {
+            address: undefined,
+            lockScript: undefined,
+            award: undefined,
+        };
+        const cellbaseTx = transactions.find(
+            (tx) => tx.type === TransactionTypeEnum.cellbase,
+        );
+        if (cellbaseTx) {
+            const info = db.getMinerInfo(cellbaseTx.tx_hash);
+            miner.lockScript = info?.lockScript;
+            miner.award = info?.award;
+            if (info?.lockScript) {
+                const minerAddress = ccc.Address.fromScript(
+                    {
+                        codeHash: info.lockScript.code_hash,
+                        hashType: info.lockScript.hash_type,
+                        args: info.lockScript.args,
+                    },
+                    rpcClient,
+                );
+                miner.address = minerAddress.toString();
+            }
+        }
+        res.json({
+            blockHeader,
+            transactions,
+            proposalTransactions,
+            miner,
+            cellbaseTx,
+        });
     });
 
     app.get("/tip-block-header", async (_req: Request, res: Response) => {

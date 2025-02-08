@@ -63,18 +63,25 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                     </svg>
                 </div>
 
-                <div className={"w-[10px] h-[20px] bg-black"} />
+                <div className={`w-[10px] h-[20px] bg-black`} />
 
-                <div className={"relative"}>
-                    <img
-                        className={
-                            "absolute top-2 h-[150px] left-1/2 -translate-x-1/2"
-                        }
-                        src={minerApe}
-                        alt=""
-                    />
+                <div>
+                    <div className={"relative"}>
+                        <img
+                            className={
+                                "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
+                            }
+                            src={minerApe}
+                            alt=""
+                        />
 
-                    <img className={`${spinClass}`} src={minerWheel} alt="" />
+                        <img
+                            className={`${doorClosing ? "" : spinClass}`}
+                            src={minerWheel}
+                            alt=""
+                        />
+                    </div>
+
                     <div className={"relative"}>
                         <div
                             className={

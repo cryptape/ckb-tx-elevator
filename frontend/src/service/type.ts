@@ -152,6 +152,32 @@ export interface TipBlockResponse {
     proposedTransactions: Transaction[];
 }
 
+export interface BlockResponse {
+    blockHeader: BlockHeader;
+    transactions: Transaction[];
+    proposalTransactions: Transaction[];
+    miner: MinerInfo;
+}
+
+export interface MinerInfo {
+    address?: string;
+    lockScript?: DBScript;
+    award?: Hex;
+}
+
+export interface DBScript {
+    code_hash: Hex;
+    hash_type: HashType;
+    args: Hex;
+}
+
+export enum HashType {
+    Data = 0,
+    Type = 1,
+    Data1 = 2,
+    Data2 = 4,
+}
+
 export interface ChainSnapshot {
     tipCommittedTransactions: Transaction[];
     pendingTransactions: Transaction[];

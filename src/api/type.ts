@@ -1,6 +1,11 @@
 import type { Hex } from "@ckb-ccc/core";
 import type { Network } from "../core/type";
-import type { ChainSnapshot, DBBlockHeader, DBTransaction } from "../db/type";
+import type {
+    ChainSnapshot,
+    DBBlockHeader,
+    DBScript,
+    DBTransaction,
+} from "../db/type";
 
 export enum SubMessageType {
     NewSnapshot = "newSnapshot",
@@ -48,4 +53,17 @@ export interface PoolInfo {
     total_tx_size: Hex;
     tx_size_limit: Hex;
     verify_queue_size: Hex;
+}
+
+export interface BlockResponse {
+    blockHeader: DBBlockHeader;
+    transactions: DBTransaction[];
+    proposalTransactions: DBTransaction[];
+    miner: MinerInfo;
+}
+
+export interface MinerInfo {
+    address?: string;
+    lockScript?: DBScript;
+    award?: Hex;
 }

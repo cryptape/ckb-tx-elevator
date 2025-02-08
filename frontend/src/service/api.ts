@@ -3,6 +3,7 @@ import { Hex } from "@ckb-ccc/core";
 import { WsApiService } from "./ws";
 import {
     BlockHeader,
+    BlockResponse,
     ChainSnapshot,
     ChainStats,
     Network,
@@ -78,6 +79,13 @@ export class ChainService {
             `/block-header?blockHash=${blockHash}`,
         );
         return response.data || null;
+    }
+
+    async getBlock(blockHash: Hex): Promise<BlockResponse | null> {
+        const response = await this.httpClient.get<BlockResponse>(
+            `/block?blockHash=${blockHash}`,
+        );
+        return response.data;
     }
 
     async getTipBlockHeader(): Promise<BlockHeader | null> {
