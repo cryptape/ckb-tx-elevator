@@ -4,21 +4,20 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { Hex } from "@ckb-ccc/core";
 
 export interface ElevatorUpButtonProps {
-    difficultyInHex: Hex;
+    difficultyInEH: number;
     doorClosing: boolean;
+    nonce: Hex;
 }
 
 const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
     doorClosing,
-    difficultyInHex,
+    difficultyInEH,
+    nonce,
 }) => {
-    const difficulty = parseFloat(
-        (+difficultyInHex / 10000000000000000).toString(),
-    ).toFixed(2);
     const spinClass =
-        +difficulty > 3.5
+        difficultyInEH > 3.8
             ? "animate-spin-fast"
-            : +difficulty > 3.1
+            : difficultyInEH > 3.5
               ? "animate-spin-medium"
               : "animate-spin-slow";
     const chainTheme = useAtomValue(chainThemeAtom);
@@ -88,7 +87,7 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                                 "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-text-inverse"
                             }
                         >
-                            <div>{difficulty} EH</div>
+                            <div>{difficultyInEH} EH</div>
                         </div>
                         <img src={minerBaseSvg} alt="" />
                     </div>

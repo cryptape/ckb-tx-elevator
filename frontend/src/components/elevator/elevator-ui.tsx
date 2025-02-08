@@ -7,7 +7,7 @@ import { TipBlockResponse } from "../../service/type";
 import { useAtomValue } from "jotai";
 import { chainThemeAtom, ChainTheme } from "../../states/atoms";
 import { useState } from "preact/hooks";
-import BlockModal from "./block-modal";
+import { compactToDifficulty, difficultyToEH } from "../../util/difficulty";
 
 export interface ElevatorUIProp {
     block: TipBlockResponse;
@@ -42,8 +42,11 @@ export const ElevatorUI: FunctionalComponent<ElevatorUIProp> = ({
         >
             <div className={"w-1/5 self-end"}>
                 <ElevatorMiner
-                    difficultyInHex={block.blockHeader.compact_target}
+                    difficultyInEH={difficultyToEH(
+                        compactToDifficulty(block.blockHeader.compact_target),
+                    )}
                     doorClosing={isDoorClosing}
+                    nonce={block.blockHeader.nonce}
                 />
             </div>
 

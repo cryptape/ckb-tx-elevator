@@ -18,6 +18,7 @@ import {
     shannonToCKB,
     toShortHex,
 } from "../../util/type";
+import { compactToDifficulty, difficultyToEH } from "../../util/difficulty";
 
 interface BlockModalProps {
     blockHash: Hex;
@@ -50,7 +51,9 @@ const BlockModal: preact.FunctionComponent<BlockModalProps> = ({
     const size = calcTotalTxSize(block?.transactions || []);
     const proposalTransactions = block?.proposalTransactions.length;
     const minerRewardCKB = shannonToCKB(+block?.miner.award);
-    const difficulty = block?.blockHeader.compact_target;
+    const difficulty = block?.blockHeader.compact_target
+        ? difficultyToEH(compactToDifficulty(block?.blockHeader.compact_target))
+        : undefined;
     const nonce = block?.blockHeader.nonce
         ? toShortHex(block?.blockHeader.nonce)
         : undefined;
