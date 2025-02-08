@@ -1,7 +1,7 @@
 import {
     JsonRpcTransaction,
     JsonRpcTransformers,
-} from "@ckb-ccc/core/advancedBarrel";
+} from "@ckb-ccc/core/advanced";
 import { Transaction } from "../service/type";
 import { blockSizeLimit } from "../components/elevator/util";
 
