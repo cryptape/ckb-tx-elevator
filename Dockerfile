@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.4.0
 
 # Install dependencies
 RUN pnpm install
@@ -28,7 +28,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9.4.0
 
 # Install production dependencies only
 RUN pnpm install --prod
