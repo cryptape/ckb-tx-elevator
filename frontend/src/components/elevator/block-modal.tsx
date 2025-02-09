@@ -3,13 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { useAtomValue } from "jotai";
 import { createBlockLink, createTransactionLink } from "../../util/link";
-import {
-    BlockResponse,
-    Network,
-    TransactionStatus,
-    TransactionType,
-    TransactionTypeEnum,
-} from "../../service/type";
+import { BlockResponse, Network } from "../../service/type";
 import { useChainService } from "../../context/chain";
 import { ccc, Hex } from "@ckb-ccc/core";
 import {
