@@ -94,3 +94,18 @@
 .animation-delay-1500 {
     animation-delay: 1500ms;
 }
+
+@keyframes bubble-up {
+    0% {
+        transform: translateY(-50%) translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-150px) translateX(0);
+        opacity: 0;
+    }
+}
+
+.animate-bubble-up {
+    animation: bubble-up 3s ease-out forwards;
+}
