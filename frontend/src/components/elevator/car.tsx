@@ -18,6 +18,7 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import ElevatorCapacity from "./capacity";
 import { JSX } from "preact/jsx-runtime";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
+import { toShortHex } from "../../util/type";
 
 export interface ElevatorCarProp {
     transactions: Transaction[];
@@ -160,21 +161,6 @@ const ElevatorCar: React.FC<ElevatorCarProp> = (props) => {
 
         // run the engine
         Runner.run(runner, engine);
-
-        // display transaction fee on box
-        Matter.Events.on(render, "afterRender", function () {
-            const context = render.context;
-            context.fillStyle = "white";
-            context.font = "12px";
-
-            for (const box of txBoxes) {
-                const { x, y } = box.position;
-                const fee = transactions.find(
-                    (tx) => tx.tx_hash === box.label,
-                ).fee;
-                context.fillText(`${+fee}`, x - 30, y);
-            }
-        });
 
         // listen to mouse hover event
         Matter.Events.on(mouseConstraint, "mousemove", (event) => {
