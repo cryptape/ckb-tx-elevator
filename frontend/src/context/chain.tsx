@@ -7,7 +7,6 @@ import {
 } from "preact/compat";
 import { ChainService } from "../service/api";
 import { Network } from "../service/type";
-import { WsApiService } from "../service/ws";
 
 interface ChainContextType {
     network: Network;
@@ -35,6 +34,8 @@ export function ChainProvider({
         !chainServiceRef.current ||
         chainServiceRef.current.network !== network
     ) {
+        chainServiceRef.current?.wsClient?.dispose();
+
         chainServiceRef.current = new ChainService(network);
 
         // 创建新的连接 Promise
@@ -43,15 +44,18 @@ export function ChainProvider({
         });
 
         // 监听 WebSocket 连接状态
-        const wsClient = chainServiceRef.current.wsClient as WsApiService;
-        wsClient.connect();
+        chainServiceRef.current.wsClient.connect();
 
-        wsClient.on("open", () => {
+        chainServiceRef.current.wsClient.on("open", () => {
             setIsConnected(true);
             resolveRef.current?.();
         });
-        wsClient.on("close", () => setIsConnected(false));
-        wsClient.on("error", () => setIsConnected(false));
+        chainServiceRef.current.wsClient.on("close", () =>
+            setIsConnected(false),
+        );
+        chainServiceRef.current.wsClient.on("error", () =>
+            setIsConnected(false),
+        );
     }
 
     // 组件卸载时清理
@@ -60,11 +64,11 @@ export function ChainProvider({
             // 如果有需要关闭的连接，在这里添加清理逻辑
             chainServiceRef.current?.wsClient?.dispose(); // 假设 WsApiService 有 close 方法
         };
-    }, [network]);
+    }, []);
 
     // 等待连接的公共方法
     const waitForConnection = async () => {
-        if (isConnected) return;
+        if (isConnected && chainServiceRef.current.wsClient.isConnected) return;
         await connectionPromiseRef.current;
     };
 

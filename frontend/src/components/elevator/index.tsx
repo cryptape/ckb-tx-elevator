@@ -21,10 +21,12 @@ export default function Elevator({ setIsNewBlock }: ElevatorProp) {
     };
 
     // subscribe to new block
-    // todo: need unscribe when component unmount
     const subNewBlock = async () => {
         // 等待连接就绪
         await waitForConnection();
+
+        // unsubscribe first
+        chainService.unSubscribe("newBlock");
 
         chainService.subscribeNewBlock((newBlock) => {
             if (newBlock.blockHeader) {
@@ -43,6 +45,8 @@ export default function Elevator({ setIsNewBlock }: ElevatorProp) {
         });
     };
     useEffect(() => {
+        setTipBlock(undefined);
+
         subNewBlock();
     }, [chainTheme, isConnected]);
 

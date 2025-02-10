@@ -10,6 +10,7 @@ import type {
 export enum SubMessageType {
     NewSnapshot = "newSnapshot",
     NewBlock = "newBlock",
+    UnSubscribe = "unSubscribe",
 }
 
 export type SubMessageContent = ChainSnapshot | SubBlock | string;

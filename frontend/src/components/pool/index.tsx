@@ -22,6 +22,10 @@ const Pool: FunctionalComponent = () => {
 
     const subNewSnapshot = async () => {
         await waitForConnection();
+
+        // unsubscribe first
+        chainService.unSubscribe("newSnapshot");
+
         chainService.subscribeNewSnapshot((newSnapshot) => {
             const {
                 tipCommittedTransactions,
@@ -59,6 +63,13 @@ const Pool: FunctionalComponent = () => {
     };
 
     useEffect(() => {
+        setTotalTxSizes[0];
+        setTotalTxs[0];
+        setProposedTxs([]);
+        setCommittedTxs([]);
+        setPendingTxs([]);
+        setProposingTxs([]);
+
         subNewSnapshot();
     }, [chainTheme]);
 

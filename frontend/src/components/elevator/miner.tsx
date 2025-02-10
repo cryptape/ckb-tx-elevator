@@ -36,7 +36,9 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
             : "/assets/svg/elevator/testnet/miner-wheel.svg";
     const minerApe =
         chainTheme === ChainTheme.mainnet
-            ? "/assets/svg/elevator/mainnet/miner-ape.svg"
+            ? doorClosing
+                ? "/assets/svg/elevator/mainnet/miner-ape.svg"
+                : "/assets/svg/elevator/ape-running.gif"
             : "/assets/svg/elevator/testnet/miner-ape.svg";
 
     return (
@@ -86,7 +88,13 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
 
                     <div className="relative">
                         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-text-inverse">
-                            <div>Difficulty {difficultyInEH} EH</div>
+                            <div
+                                className={
+                                    "truncate overflow-hidden whitespace-nowrap"
+                                }
+                            >
+                                Difficulty {difficultyInEH} EH
+                            </div>
                         </div>
                         <img src={minerBaseSvg} alt="Miner Base" />
                     </div>
