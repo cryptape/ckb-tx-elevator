@@ -8,6 +8,7 @@ import { useAtomValue } from "jotai";
 import { chainThemeAtom, ChainTheme } from "../../states/atoms";
 import { useState } from "preact/hooks";
 import { compactToDifficulty, difficultyToEH } from "../../util/difficulty";
+import { calcBlockOccupation, calcTotalTxSize } from "../../util/type";
 
 export interface ElevatorUIProp {
     block: TipBlockResponse;
@@ -71,8 +72,10 @@ export const ElevatorUI: FunctionalComponent<ElevatorUIProp> = ({
             <div className={"w-1/5"}>
                 <ElevatorPanel
                     transactionNumber={block.committedTransactions.length}
-                    sizeBytes={20}
-                    occupationPercentage={20}
+                    sizeBytes={calcTotalTxSize(block.committedTransactions)}
+                    occupationPercentage={calcBlockOccupation(
+                        block.committedTransactions,
+                    )}
                     blockHash={block.blockHeader.block_hash}
                 />
             </div>

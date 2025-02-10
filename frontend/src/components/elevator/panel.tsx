@@ -8,7 +8,7 @@ import BlockModal from "./block-modal";
 interface Props {
     transactionNumber: number;
     sizeBytes: number;
-    occupationPercentage: number;
+    occupationPercentage: string;
     blockHash: Hex;
 }
 
@@ -63,7 +63,7 @@ const ElevatorPanel: FunctionComponent<Props> = ({
                     </div>
                     <div>
                         <h3 className={`font-dseg-classic text-text-inverse`}>
-                            {occupationPercentage}
+                            {occupationPercentage} %
                         </h3>
                     </div>
                 </div>
