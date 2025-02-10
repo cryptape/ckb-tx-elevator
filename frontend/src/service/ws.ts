@@ -25,7 +25,7 @@ export interface WebSocketServiceOptions {
 const API_WS_URL = Config.testnetApiWsUrl;
 
 export class WsApiService {
-    private socket: WebSocket | null = null;
+    socket: WebSocket | null = null;
     private url: string;
     private reconnectInterval: number;
     private reconnectAttempts: number;
@@ -201,15 +201,25 @@ export class WsApiService {
     }
 
     dispose() {
-        if (this.socket) {
-            this.socket.close();
-            this.socket = null;
-        }
         this.messageHandlers.clear();
         this.eventHandlers.error = [];
         this.eventHandlers.close = [];
         this.eventHandlers.open = [];
+
+        this.socket.onopen = null;
+        this.socket.onclose = null;
+        this.socket.onerror = null;
+        this.socket.onmessage = null;
+
+        if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+        }
         this.log("info", "WebSocket service disposed");
+    }
+
+    clearDataListener(type: string) {
+        this.messageHandlers.delete(type);
     }
 
     private log(

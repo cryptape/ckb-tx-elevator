@@ -139,4 +139,9 @@ export class ChainService {
         });
         this.wsClient.send("newBlock", {});
     }
+
+    async unSubscribe(type: "newSnapshot" | "newBlock") {
+        // maybe use more subtle way to unsubscribe
+        this.wsClient.clearDataListener(type);
+    }
 }

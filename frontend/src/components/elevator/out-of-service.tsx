@@ -44,7 +44,11 @@ export const ElevatorOutOfServiceUI: FunctionalComponent<
             }
         >
             <div className={"w-1/5 self-end"}>
-                <ElevatorMiner doorClosing={false} />
+                <ElevatorMiner
+                    nonce={"0x0"}
+                    difficultyInEH={0}
+                    doorClosing={false}
+                />
             </div>
 
             <div>
