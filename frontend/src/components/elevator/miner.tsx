@@ -2,6 +2,8 @@ import { useAtomValue } from "jotai";
 import { FunctionComponent } from "preact";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { Hex } from "@ckb-ccc/core";
+import { useMemo } from "preact/hooks";
+import { getApeRunningGif, getRunningSpeedClass } from "./util";
 
 export interface ElevatorUpButtonProps {
     difficultyInEH: number;
@@ -14,12 +16,6 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
     difficultyInEH,
     nonce,
 }) => {
-    const spinClass =
-        difficultyInEH > 3.8
-            ? "animate-spin-fast"
-            : difficultyInEH > 3.5
-              ? "animate-spin-medium"
-              : "animate-spin-slow";
     const chainTheme = useAtomValue(chainThemeAtom);
     const bgBrand =
         chainTheme === ChainTheme.mainnet
@@ -34,11 +30,23 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
         chainTheme === ChainTheme.mainnet
             ? "/assets/svg/elevator/mainnet/miner-wheel.svg"
             : "/assets/svg/elevator/testnet/miner-wheel.svg";
-    const minerApe =
+
+    const speedClass = useMemo(
+        () => getRunningSpeedClass(difficultyInEH),
+        [difficultyInEH],
+    );
+
+    const spinClass =
+        speedClass === "fast"
+            ? "animate-spin-fast"
+            : speedClass === "medium"
+              ? "animate-spin-medium"
+              : "animate-spin-slow";
+    const minerApeRunning = getApeRunningGif(chainTheme, speedClass);
+
+    const minerJumpSvg =
         chainTheme === ChainTheme.mainnet
-            ? doorClosing
-                ? "/assets/svg/elevator/mainnet/miner-ape.svg"
-                : "/assets/svg/elevator/ape-running.gif"
+            ? "/assets/svg/elevator/mainnet/miner-ape.svg"
             : "/assets/svg/elevator/testnet/miner-ape.svg";
 
     return (
@@ -67,7 +75,7 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                     <div className="relative">
                         <img
                             className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
-                            src={minerApe}
+                            src={doorClosing ? minerJumpSvg : minerApeRunning}
                             alt="Miner Ape"
                         />
                         <img
