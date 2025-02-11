@@ -68,6 +68,13 @@ export function createHttpServer(
         res.json(blockHeader);
     });
 
+    app.get("/block-header-by-number", async (req: Request, res: Response) => {
+        const blockNumber = req.query.blockNumber as string;
+        const numHex: Hex = `0x${Number.parseInt(blockNumber).toString(16)}`;
+        const blockHeader = db.getBlockHeaderByNumber(numHex);
+        res.json(blockHeader);
+    });
+
     app.get("/block", async (req: Request, res: Response) => {
         const blockHash = req.query.blockHash as Hex;
         const blockHeader = db.getBlockHeaderByHash(blockHash);

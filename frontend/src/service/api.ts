@@ -81,6 +81,15 @@ export class ChainService {
         return response.data || null;
     }
 
+    async getBlockHeaderByNumber(
+        blockNumber: string,
+    ): Promise<BlockHeader | null> {
+        const response = await this.httpClient.get<BlockHeader>(
+            `/block-header-by-number?blockNumber=${blockNumber}`,
+        );
+        return response.data || null;
+    }
+
     async getBlock(blockHash: Hex): Promise<BlockResponse | null> {
         const response = await this.httpClient.get<BlockResponse>(
             `/block?blockHash=${blockHash}`,

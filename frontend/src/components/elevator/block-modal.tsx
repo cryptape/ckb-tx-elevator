@@ -251,10 +251,12 @@ const BlockModal: preact.FunctionComponent<BlockModalProps> = ({
                 {/* Buttons */}
                 <div className="mt-8 flex flex-col gap-2">
                     <button
-                        onClick={onClose}
+                        onClick={() => {
+                            window.location.href = `/replay/${blockHash}`;
+                        }}
                         className={`${buttonColor} ${buttonHover} text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline`}
                     >
-                        Got it
+                        Share this Block
                     </button>
                     <a
                         href={createBlockLink(

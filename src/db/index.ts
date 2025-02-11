@@ -679,6 +679,13 @@ export class DB {
         return stmt.get();
     }
 
+    getBlockHeaderByNumber(number: Hex) {
+        const stmt = this.db.prepare<[], DBBlockHeader>(`
+            SELECT * FROM block_header WHERE block_number = '${number}'
+        `);
+        return stmt.get();
+    }
+
     getBlockHeaders(order: "ASC" | "DESC", limit: number) {
         const stmt = this.db.prepare<[], DBBlockHeader>(`
 	        SELECT * FROM block_header ORDER BY block_number ${order} LIMIT ${limit}	
