@@ -5,7 +5,7 @@ import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "./states/atoms";
 import { Network } from "./service/type";
 import { useMemo } from "preact/hooks";
-import { Block } from "./pages/block";
+import { Block } from "./pages/replay";
 
 const App = () => {
     const chainTheme = useAtomValue(chainThemeAtom);
