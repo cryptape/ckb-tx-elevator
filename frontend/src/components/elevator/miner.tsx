@@ -4,6 +4,7 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { Hex } from "@ckb-ccc/core";
 import { useMemo } from "preact/hooks";
 import { getApeRunningGif, getRunningSpeedClass } from "./util";
+import Tooltip from "../tooltip";
 
 export interface ElevatorUpButtonProps {
     difficultyInEH: number;
@@ -72,40 +73,49 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                 <div className="w-[10px] h-[20px] bg-black" />
 
                 <div>
-                    <div className="relative">
-                        <img
-                            className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
-                            src={doorClosing ? minerJumpSvg : minerApeRunning}
-                            alt="Miner Ape"
-                        />
-                        <img
-                            className={`${doorClosing ? "" : spinClass}`}
-                            src={minerWheel}
-                            alt="Miner Wheel"
-                        />
-
-                        {/* 气泡元素 */}
-                        {doorClosing && (
-                            <div
-                                className={`absolute left-[calc(70%+8px)] top-1/4 -translate-y-1/2 ${bgBrand} text-white px-3 py-1 rounded-full animate-bubble-up`}
-                            >
-                                Found a new nonce {nonce}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="relative">
-                        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-text-inverse">
-                            <div
+                    <Tooltip text="I am a Miner, I work hard to find the nonce for the block for coins!">
+                        <div className="relative">
+                            <img
                                 className={
-                                    "truncate overflow-hidden whitespace-nowrap"
+                                    "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-50"
                                 }
-                            >
-                                Difficulty {difficultyInEH} EH
-                            </div>
+                                src={
+                                    doorClosing ? minerJumpSvg : minerApeRunning
+                                }
+                                alt="Miner Ape"
+                            />
+
+                            <img
+                                className={`${doorClosing ? "" : spinClass}`}
+                                src={minerWheel}
+                                alt="Miner Wheel"
+                            />
+
+                            {/* 气泡元素 */}
+                            {doorClosing && (
+                                <div
+                                    className={`absolute left-[calc(70%+8px)] top-1/4 -translate-y-1/2 ${bgBrand} text-white px-3 py-1 rounded-full animate-bubble-up`}
+                                >
+                                    Found a new nonce {nonce}
+                                </div>
+                            )}
                         </div>
-                        <img src={minerBaseSvg} alt="Miner Base" />
-                    </div>
+                    </Tooltip>
+
+                    <Tooltip text="The miner difficulty is the number of leading zeros in the hash of the block header. The higher the difficulty, the harder it is to find the nonce.">
+                        <div className="relative">
+                            <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-text-inverse">
+                                <div
+                                    className={
+                                        "truncate overflow-hidden whitespace-nowrap"
+                                    }
+                                >
+                                    Difficulty {difficultyInEH} EH
+                                </div>
+                            </div>
+                            <img src={minerBaseSvg} alt="Miner Base" />
+                        </div>
+                    </Tooltip>
                 </div>
             </div>
         </div>

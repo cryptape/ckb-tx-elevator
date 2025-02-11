@@ -18,7 +18,6 @@ import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import ElevatorCapacity from "./capacity";
 import { JSX } from "preact/jsx-runtime";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
-import { toShortHex } from "../../util/type";
 
 export interface ElevatorCarProp {
     transactions: Transaction[];
