@@ -24,7 +24,7 @@ const Navbar: FunctionalComponent = () => {
         {
             label: "Github",
             selected: false,
-            url: "https://github.com/cryptape",
+            url: "https://github.com/cryptape/ckb-tx-elevator",
             newTab: true,
             icon: "/assets/icons/github.svg",
         },
