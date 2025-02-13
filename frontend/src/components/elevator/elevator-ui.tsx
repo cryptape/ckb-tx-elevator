@@ -9,6 +9,7 @@ import { chainThemeAtom, ChainTheme } from "../../states/atoms";
 import { useState } from "preact/hooks";
 import { compactToDifficulty, difficultyToEH } from "../../util/difficulty";
 import { calcBlockOccupation, calcTotalTxSize } from "../../util/type";
+import Tooltip from "../tooltip";
 
 export interface ElevatorUIProp {
     block: TipBlockResponse;
@@ -60,11 +61,16 @@ export const ElevatorUI: FunctionalComponent<ElevatorUIProp> = ({
                         doorClosing={isDoorClosing}
                     />
                     <div className={"px-20"}>
-                        <ElevatorCar
-                            blockHeader={block.blockHeader}
-                            transactions={block.committedTransactions}
-                            setFromDoorClosing={doorClosing}
-                        />
+                        <Tooltip
+                            text="The elevator car size represents CKB max block size limit. The box size is then based on the transaction's size in bytes."
+                            pos="bottom"
+                        >
+                            <ElevatorCar
+                                blockHeader={block.blockHeader}
+                                transactions={block.committedTransactions}
+                                setFromDoorClosing={doorClosing}
+                            />
+                        </Tooltip>
                     </div>
                 </div>
             </div>

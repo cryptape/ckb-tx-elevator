@@ -98,7 +98,7 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                 </div>
 
                 <div>
-                    <Tooltip text="I am a Miner, I work hard to find the nonce for the block for coins!">
+                    <Tooltip text="Hey there! I’m your CKB miner—honest, reliable, and impossible to deceive! I verify every transaction and only include valid ones. The harder the mining gets, the faster I have to work! Wish me luck!">
                         <div className="relative  flex justify-center items-center">
                             <div className={`absolute flex justify-center`}>
                                 <img
@@ -122,7 +122,7 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                         </div>
                     </Tooltip>
 
-                    <Tooltip text="The miner difficulty is the number of leading zeros in the hash of the block header. The higher the difficulty, the harder it is to find the nonce.">
+                    <Tooltip text="CKB runs on Proof-of-Work (PoW), just like Bitcoin! That means miners compete to solve complex puzzles to secure the network. The higher the difficulty, the harder they have to work to mine new blocks and keep everything running smoothly!">
                         <div className="relative">
                             <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-text-inverse">
                                 <div
