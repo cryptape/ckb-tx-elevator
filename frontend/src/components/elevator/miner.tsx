@@ -47,12 +47,39 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
 
     const minerJumpSvg =
         chainTheme === ChainTheme.mainnet
+            ? "/assets/svg/elevator/mainnet/ape-jump.svg"
+            : "/assets/svg/elevator/testnet/ape-jump.svg";
+    const jumpClass = doorClosing ? "w-2/3 animate-jump" : "";
+
+    const minerStandSvg =
+        chainTheme === ChainTheme.mainnet
             ? "/assets/svg/elevator/mainnet/miner-ape.svg"
             : "/assets/svg/elevator/testnet/miner-ape.svg";
 
     return (
         <div>
-            <div class="flex flex-col h-full align-bottom items-center flex-grow">
+            <div class="w-full relative flex flex-col h-full items-center gap-10">
+                {/* 气泡元素 */}
+                {doorClosing && (
+                    <div
+                        className={`absolute top-0 animate-bubble-up flex justify-center`}
+                    >
+                        <div
+                            className={
+                                "relative pr-2 pb-2 flex flex-col items-center"
+                            }
+                        >
+                            <div
+                                className={`${bgBrand} text-white px-3 py-1 rounded-full text-clip flex flex-col justify-center`}
+                            >
+                                <div className={`text-ellipsis text-nowrap`}>
+                                    Nonce {nonce.slice(0, 10)}..
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div
                     className={`rounded-full ${doorClosing ? "bg-white" : `${bgBrand}`} w-[48px] h-[48px] flex justify-center items-center`}
                 >
@@ -70,35 +97,26 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                     </svg>
                 </div>
 
-                <div className="w-[10px] h-[20px] bg-black" />
-
                 <div>
                     <Tooltip text="I am a Miner, I work hard to find the nonce for the block for coins!">
                         <div className="relative">
-                            <img
-                                className={
-                                    "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-50"
-                                }
-                                src={
-                                    doorClosing ? minerJumpSvg : minerApeRunning
-                                }
-                                alt="Miner Ape"
-                            />
+                            <div className={`absolute flex justify-center`}>
+                                <img
+                                    className={`z-50 ${jumpClass}`}
+                                    src={
+                                        doorClosing
+                                            ? minerJumpSvg
+                                            : minerApeRunning
+                                    }
+                                    alt="Miner Ape"
+                                />
+                            </div>
 
                             <img
                                 className={`${doorClosing ? "" : spinClass}`}
                                 src={minerWheel}
                                 alt="Miner Wheel"
                             />
-
-                            {/* 气泡元素 */}
-                            {doorClosing && (
-                                <div
-                                    className={`absolute left-[calc(70%+8px)] top-1/4 -translate-y-1/2 ${bgBrand} text-white px-3 py-1 rounded-full animate-bubble-up`}
-                                >
-                                    Found a new nonce {nonce}
-                                </div>
-                            )}
                         </div>
                     </Tooltip>
 

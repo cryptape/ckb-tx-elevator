@@ -107,5 +107,18 @@
 }
 
 .animate-bubble-up {
-    animation: bubble-up 3s ease-out forwards;
+    animation: bubble-up 3s ease-in forwards;
+}
+
+@keyframes jump {
+    0% {
+        transform: translateY(0%) translateX(0);
+    }
+    100% {
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+.animate-jump {
+    animation: jump 2s ease-out forwards;
 }

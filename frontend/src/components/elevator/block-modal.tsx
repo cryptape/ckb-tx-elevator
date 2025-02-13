@@ -5,7 +5,7 @@ import { useAtomValue } from "jotai";
 import { createBlockLink, createTransactionLink } from "../../util/link";
 import { BlockResponse, Network } from "../../service/type";
 import { useChainService } from "../../context/chain";
-import { ccc, Hex } from "@ckb-ccc/core";
+import { Hex } from "@ckb-ccc/core";
 import {
     calcBlockOccupation,
     calcTotalTxSize,

@@ -8,7 +8,6 @@ import type { DB } from "../db";
 import { logger } from "../util/logger";
 import type {
     JsonRpcPoolTransactionEntry,
-    Network,
     PoolTransactionReject,
 } from "./type";
 
@@ -119,7 +118,12 @@ export class Subscriber {
     }
 
     async run() {
-        await this.db.cleanOrphanedTransaction(this.httpRpcClient);
+        try {
+            await this.db.cleanOrphanedTransaction(this.httpRpcClient);
+        } catch (error) {
+            logger.debug("cleanOrphanedTransaction error:", error);
+            logger.debug("skip cleaning...");
+        }
 
         this.ws = new WebSocket(this.ckbRpcUrl);
         const topics = this.createTopicSubscriber();
