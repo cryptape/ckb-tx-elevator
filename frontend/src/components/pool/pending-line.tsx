@@ -13,6 +13,8 @@ import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { SignBoard } from "./signboard";
 import Bulb from "./bulb";
+import Tooltip from "../tooltip";
+import { useChainService } from "../../context/chain";
 
 export interface PendingLineProps {
     title: string;
@@ -24,6 +26,7 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
     txs,
 }) => {
     const chainTheme = useAtomValue(chainThemeAtom);
+    const { chainService } = useChainService();
 
     const [tooltipContent, setTooltipContent] = useState<JSX.Element | null>(
         null,
@@ -242,13 +245,30 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
                     <div
                         className={`text-text-inverse ${bgColor} w-[240px] h-[230px] border-[2px] border-text-secondary flex justify-center gap-2 p-4`}
                     >
-                        <Bulb bulbColor="bg-functional-warning" isOn={true} />
-                        <Bulb bulbColor="bg-functional-success" isOn={true} />
-                        <Bulb />
+                        <Tooltip text="Websocket connection status, green means connected, red means disconnected">
+                            <Bulb
+                                bulbColor="bg-functional-success"
+                                isOn={chainService.wsClient.isConnected}
+                            />
+                        </Tooltip>
+                        <Tooltip text="Reserved for later usage.">
+                            <Bulb
+                                bulbColor="bg-functional-warning"
+                                isOn={true}
+                            />
+                        </Tooltip>
+                        <Tooltip text="Reserved for later usage.">
+                            <Bulb
+                                bulbColor="bg-functional-warning"
+                                isOn={true}
+                            />
+                        </Tooltip>
                     </div>
                 </div>
                 <div className={"absolute top-0 left-1/2 -translate-x-1/2"}>
-                    <SignBoard title={title} count={txs.length} />
+                    <Tooltip text="Pending transactions are the ones just arrived and are waiting to be picked up by miners.">
+                        <SignBoard title={title} count={txs.length} />
+                    </Tooltip>
                 </div>
                 <div className={"relative"} ref={containerRef}>
                     <canvas ref={canvasRef} />
@@ -267,7 +287,9 @@ export const PendingLine: FunctionalComponent<PendingLineProps> = ({
                     )}
                 </div>
                 <div>
-                    <img src={minerRight} alt="" />
+                    <Tooltip text="Hey there! I’m your CKB miner—fair, reliable and honest! I get to pick up transactions based on their fee. The higher the fee, the better the chance of being picked up by me faster!">
+                        <img src={minerRight} alt="" />
+                    </Tooltip>
                 </div>
             </div>
         </div>

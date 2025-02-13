@@ -142,6 +142,7 @@ export const CommittedLine: FunctionalComponent<CommittedLineProps> = ({
                         <img src={holeSvg} alt="" />
                     </div>
                     <canvas className={`z-2 relative`} ref={canvasRef} />
+
                     {/* Transaction Box Tooltip 层 */}
                     {tooltipContent && tooltipPosition && (
                         <div

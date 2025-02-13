@@ -256,7 +256,7 @@ const BlockModal: preact.FunctionComponent<BlockModalProps> = ({
                         }}
                         className={`${buttonColor} ${buttonHover} text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline`}
                     >
-                        Share this Block
+                        Replay the Block
                     </button>
                     <a
                         href={createBlockLink(

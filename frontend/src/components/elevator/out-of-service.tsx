@@ -4,6 +4,7 @@ import { useAtomValue } from "jotai";
 import { chainThemeAtom, ChainTheme } from "../../states/atoms";
 import { carBoxSize } from "./util";
 import { WebSocketConnectionState } from "../../service/ws";
+import Tooltip from "../tooltip";
 
 export interface ElevatorOutOfServiceUIProp {
     connectStatus: WebSocketConnectionState;
@@ -37,6 +38,14 @@ export const ElevatorOutOfServiceUI: FunctionalComponent<
             ? "bg-elevator-mainnet-bottom"
             : "bg-elevator-testnet-bottom";
 
+    const tooltipContent =
+        connectStatus === WebSocketConnectionState.OPEN
+            ? "We are connected, just waiting for the newest block coming, please be patient."
+            : connectStatus === WebSocketConnectionState.CLOSED
+              ? "The websocket connection is closed, waiting to reconnect..."
+              : connectStatus === WebSocketConnectionState.CONNECTING
+                ? "The websocket connection is connecting, please wait..."
+                : "The websocket connection is not connected, please check your network connection or try refresh the page.";
     return (
         <div
             className={
@@ -55,20 +64,22 @@ export const ElevatorOutOfServiceUI: FunctionalComponent<
                 <div
                     className={`${bgElevatorFrame} flex flex-col justify-center mx-auto rounded-lg border-[20px] ${borderBlack}`}
                 >
-                    <div className={"p-4"}>
-                        <div
-                            className={
-                                "w-min text-nowrap flex justify-center gap-1 text-center p-4 bg-surface-DEFAULT-inverse mx-auto rounded-lg"
-                            }
-                        >
-                            <div className={"text-functional-error"}>
-                                Status
-                            </div>
-                            <div className={"text-text-inverse"}>
-                                Connection {connectStatus}
+                    <Tooltip text={tooltipContent}>
+                        <div className={"p-4"}>
+                            <div
+                                className={
+                                    "w-min text-nowrap flex justify-center gap-1 text-center p-4 bg-surface-DEFAULT-inverse mx-auto rounded-lg"
+                                }
+                            >
+                                <div className={"text-functional-error"}>
+                                    Status
+                                </div>
+                                <div className={"text-text-inverse"}>
+                                    {connectStatus}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Tooltip>
                     <div className={"px-20"}>
                         {/* elevator car */}
                         <div

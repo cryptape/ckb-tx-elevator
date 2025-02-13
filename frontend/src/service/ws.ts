@@ -9,7 +9,7 @@ export type WebSocketMessageHandler<T> = (message: WebSocketMessage<T>) => void;
 
 export enum WebSocketConnectionState {
     CONNECTING = "CONNECTING",
-    OPEN = "OPEN",
+    OPEN = "CONNECTED",
     CLOSING = "CLOSING",
     CLOSED = "CLOSED",
     UNKNOWN = "UNKNOWN",
