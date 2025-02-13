@@ -16,7 +16,7 @@ const Tooltip = ({ text, children }: TooltipProps) => {
         >
             {children}
             {isVisible && (
-                <div className="absolute bottom-full mb-2 w-full left-1/2 transform -translate-x-1/2 bg-surface-DEFAULT-03 text-text-primary text-sm p-2 rounded-md shadow-lg z-50">
+                <div className="absolute bottom-full mb-2 w-[300px] left-1/2 transform -translate-x-1/2 bg-surface-DEFAULT-03 text-text-primary text-sm p-2 rounded-md shadow-lg border-2 border-black z-50">
                     {text}
                 </div>
             )}

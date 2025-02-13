@@ -1,6 +1,7 @@
 import { useAtomValue } from "jotai";
 import { FunctionalComponent } from "preact";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
+import Tooltip from "../tooltip";
 
 export interface PoolHeaderProps {
     totalTxs: number;
@@ -29,7 +30,9 @@ export const PoolHeader: FunctionalComponent<PoolHeaderProps> = ({
                     "absolute bottom-6 w-fit left-1/2 -translate-x-1/2 flex justify-center bg-surface-DEFAULT-inverse px-8 py-4 gap-2"
                 }
             >
-                <div className={"text-text-inverse"}>Mempool Size (KB)</div>
+                <Tooltip text="The mempool is like a waiting room for transactions before they get picked by miners into a block. ">
+                    <div className={"text-text-inverse"}>Mempool Size (KB)</div>
+                </Tooltip>
                 <div className={textColor}>{txSizeInKB}</div>
                 <div className={"text-text-inverse"}>Total Transactions</div>
                 <div className={textColor}>{totalTxs}</div>

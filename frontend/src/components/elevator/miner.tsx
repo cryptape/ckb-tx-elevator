@@ -49,7 +49,7 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
         chainTheme === ChainTheme.mainnet
             ? "/assets/svg/elevator/mainnet/ape-jump.svg"
             : "/assets/svg/elevator/testnet/ape-jump.svg";
-    const jumpClass = doorClosing ? "w-2/3 animate-jump" : "";
+    const jumpClass = doorClosing ? "px-[30px] animate-jump" : "";
 
     const minerStandSvg =
         chainTheme === ChainTheme.mainnet
@@ -99,7 +99,7 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
 
                 <div>
                     <Tooltip text="I am a Miner, I work hard to find the nonce for the block for coins!">
-                        <div className="relative">
+                        <div className="relative  flex justify-center items-center">
                             <div className={`absolute flex justify-center`}>
                                 <img
                                     className={`z-50 ${jumpClass}`}
@@ -112,11 +112,13 @@ const ElevatorMiner: FunctionComponent<ElevatorUpButtonProps> = ({
                                 />
                             </div>
 
-                            <img
-                                className={`${doorClosing ? "" : spinClass}`}
-                                src={minerWheel}
-                                alt="Miner Wheel"
-                            />
+                            <div>
+                                <img
+                                    className={`${doorClosing ? "" : spinClass}`}
+                                    src={minerWheel}
+                                    alt="Miner Wheel"
+                                />
+                            </div>
                         </div>
                     </Tooltip>
 

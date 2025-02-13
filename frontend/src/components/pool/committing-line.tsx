@@ -12,6 +12,7 @@ import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
 import { SignBoard } from "./signboard";
+import Tooltip from "../tooltip";
 
 export interface LineProps {
     title: string;
@@ -214,7 +215,9 @@ export const CommittingLine: FunctionalComponent<LineProps> = ({
                 className={`relative flex justify-start items-center pt-[100px] border-b-8 border-l-8 ${borderColor}`}
             >
                 <div className={"absolute top-0 left-1/2 -translate-x-1/2"}>
-                    <SignBoard title={title} count={txs.length} />
+                    <Tooltip text="Committing transactions are the ones getting locked in! Once finalized, they’ll be officially part of the blockchain.">
+                        <SignBoard title={title} count={txs.length} />
+                    </Tooltip>
                 </div>
                 <div className={"relative"} ref={containerRef}>
                     <canvas ref={canvasRef} />
@@ -233,7 +236,9 @@ export const CommittingLine: FunctionalComponent<LineProps> = ({
                     )}
                 </div>
                 <div className={"h-[300px] flex items-end"}>
-                    <img src={minerRight} alt="" />
+                    <Tooltip text="Hey there! I’m your CKB miner—fair, reliable and honest! I get to pick up transactions based on their fee. The higher the fee, the better the chance of being picked up by me faster!">
+                        <img src={minerRight} alt="" />
+                    </Tooltip>
                 </div>
             </div>
         </div>

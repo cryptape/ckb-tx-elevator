@@ -12,6 +12,7 @@ import { useAtomValue } from "jotai";
 import { ChainTheme, chainThemeAtom } from "../../states/atoms";
 import { bodyToScreenPosition, createTooltipContent } from "../../util/scene";
 import { SignBoard } from "./signboard";
+import Tooltip from "../tooltip";
 
 export interface ProposalLineProps {
     title: string;
@@ -212,7 +213,9 @@ export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
             className={`relative w-full flex justify-end border-b-8 border-r-8 pt-[100px] ${borderColor}`}
         >
             <div className={"h-[300px] flex items-end"}>
-                <img src={minerLeft} alt="" />
+                <Tooltip text="Hey there! I’m your CKB miner—fair, reliable and honest! I get to pick up transactions based on their fee. The higher the fee, the better the chance of being picked up by me faster!">
+                    <img src={minerLeft} alt="" />
+                </Tooltip>
             </div>
             <div className={"relative"} ref={containerRef}>
                 <canvas ref={canvasRef} />
@@ -232,7 +235,9 @@ export const ProposalLine: FunctionalComponent<ProposalLineProps> = ({
             </div>
 
             <div className={"absolute top-0 left-1/2 -translate-x-1/2"}>
-                <SignBoard title={title} count={txs.length} />
+                <Tooltip text="Proposal transactions are the ones selected and are waiting to be included in a block. But here’s the catch—if they aren’t committed within 11 blocks, they’ll go back to the pending status and have to be propose again!">
+                    <SignBoard title={title} count={txs.length} />
+                </Tooltip>
             </div>
         </div>
     );
