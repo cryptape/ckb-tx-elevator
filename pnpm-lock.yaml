@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@ckb-ccc/core':
-        specifier: ^1.2.1
-        version: 1.2.1(typescript@5.7.2)
+        specifier: ^1.5.3
+        version: 1.5.3(typescript@5.7.2)
       '@types/better-sqlite3':
         specifier: ^7.6.12
         version: 7.6.12
@@ -116,8 +116,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@ckb-ccc/core@1.2.1':
-    resolution: {integrity: sha512-wU+Q7znpDtKIcZU3yC6pN1D7K2xZZiuQC4bttgtBPoCAl/EhL52iyRW4jjUPw5GeweIdvFXMSYNf6uvm3vNNEA==}
+  '@ckb-ccc/core@1.5.3':
+    resolution: {integrity: sha512-/W7SYbygBateN6odqkMhQlkoQFs+45pJ7hYZYEaEpRdF6DjU7sIOvVSkw3qXiUOK37b2qAWJj3I8CJQbesKpng==}
 
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
@@ -424,8 +424,8 @@ packages:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
 
-  '@joyid/ckb@1.1.0':
-    resolution: {integrity: sha512-idexvr4sY28ij1RfVkIZ46EVbeOqnmrxsWj1YV6H/AAv+tM/fT2ODh3ETaN4EE0FRvJMulZppMXPDiPVuiVBUg==}
+  '@joyid/ckb@1.1.1':
+    resolution: {integrity: sha512-UIDH41PKN6EnLp1j9/6P4Pb+IaBuJKwLRw7Azo6q4E7uLgYu1E1vjBCYwsyYY1xqr8iwwZ1eyrbNgnTIH2B4vQ==}
 
   '@joyid/common@0.2.0':
     resolution: {integrity: sha512-WBZtgdEccWxjiGHIoDgRFIbnC42ZvmfvFRCTxmx9D4BLvtiFdhAa+g70lUmiHwO28GjgHIHgzHRGNRdLuk81xw==}
@@ -448,11 +448,11 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@nervosnetwork/ckb-sdk-utils@0.109.4':
-    resolution: {integrity: sha512-Td/vGKHMQ2zxumt1ViFLqMGBws/G2j5XvcOdXAqhKV4vKIdzhmR18ve6fNhdIjE7xGWH5bHO/dbXVbgVGUsPNQ==}
+  '@nervosnetwork/ckb-sdk-utils@0.109.5':
+    resolution: {integrity: sha512-Tx642hcJWbN8W3KzCIhIo49yzJ8LMqWopQCSBDKuRmwHesO/bvJqYojCVwfrOyROtFOPhgjyiGm5RXBuxm0KpQ==}
 
-  '@nervosnetwork/ckb-types@0.109.4':
-    resolution: {integrity: sha512-paA5URfnR58enL3OvT/Bv0ZuQpAZGlk5pjvzly4Q/pkRAeJVA0ks94zf4y8hTcvBCjSlEG8KCt0fI4r/sAylTg==}
+  '@nervosnetwork/ckb-types@0.109.5':
+    resolution: {integrity: sha512-5jQNjFw76YCd+Ppl+0RvBWzxwvWaKfWC5wjVFFdNAieX7xksCHfZFIeow8je7AF8uVypwe56WlLBlblxw9NBBQ==}
 
   '@noble/ciphers@0.5.3':
     resolution: {integrity: sha512-B0+6IIHiqEs3BPMT0hcRmHvEj2QHOLu+uwt+tqDDeVd0oyVzh7BPrDcPjRnV1PV/5LaknXJJQvOuRGR0zQJz+w==}
@@ -898,9 +898,6 @@ packages:
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
-
-  elliptic@6.6.0:
-    resolution: {integrity: sha512-dpwoQcLc/2WLQvJvLRHKZ+f9FgOdjnq11rurqwekGQygGPsYSK29OMMD2WalatiqQ+XGFDglTNixpPfI+lpaAA==}
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
@@ -1665,9 +1662,9 @@ snapshots:
   '@biomejs/cli-win32-x64@1.9.4':
     optional: true
 
-  '@ckb-ccc/core@1.2.1(typescript@5.7.2)':
+  '@ckb-ccc/core@1.5.3(typescript@5.7.2)':
     dependencies:
-      '@joyid/ckb': 1.1.0(typescript@5.7.2)
+      '@joyid/ckb': 1.1.1(typescript@5.7.2)
       '@noble/ciphers': 0.5.3
       '@noble/curves': 1.7.0
       '@noble/hashes': 1.6.1
@@ -1851,10 +1848,10 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@joyid/ckb@1.1.0(typescript@5.7.2)':
+  '@joyid/ckb@1.1.1(typescript@5.7.2)':
     dependencies:
       '@joyid/common': 0.2.0(typescript@5.7.2)
-      '@nervosnetwork/ckb-sdk-utils': 0.109.4
+      '@nervosnetwork/ckb-sdk-utils': 0.109.5
       cross-fetch: 4.0.0
       uncrypto: 0.1.3
     transitivePeerDependencies:
@@ -1887,15 +1884,15 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@nervosnetwork/ckb-sdk-utils@0.109.4':
+  '@nervosnetwork/ckb-sdk-utils@0.109.5':
     dependencies:
-      '@nervosnetwork/ckb-types': 0.109.4
+      '@nervosnetwork/ckb-types': 0.109.5
       bech32: 2.0.0
-      elliptic: 6.6.0
+      elliptic: 6.6.1
       jsbi: 3.1.3
       tslib: 2.3.1
 
-  '@nervosnetwork/ckb-types@0.109.4': {}
+  '@nervosnetwork/ckb-types@0.109.5': {}
 
   '@noble/ciphers@0.5.3': {}
 
@@ -2327,16 +2324,6 @@ snapshots:
   eastasianwidth@0.2.0: {}
 
   ee-first@1.1.1: {}
-
-  elliptic@6.6.0:
-    dependencies:
-      bn.js: 4.12.1
-      brorand: 1.1.0
-      hash.js: 1.1.7
-      hmac-drbg: 1.0.1
-      inherits: 2.0.4
-      minimalistic-assert: 1.0.1
-      minimalistic-crypto-utils: 1.0.1
 
   elliptic@6.6.1:
     dependencies:
