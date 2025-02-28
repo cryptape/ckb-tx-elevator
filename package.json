@@ -31,7 +31,7 @@
         "typescript": "^5.7.2"
     },
     "dependencies": {
-        "@ckb-ccc/core": "^1.2.1",
+        "@ckb-ccc/core": "^1.5.3",
         "@types/better-sqlite3": "^7.6.12",
         "better-sqlite3": "^11.7.2",
         "cors": "^2.8.5",
